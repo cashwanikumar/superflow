@@ -78,6 +78,23 @@ Then, in a new repo, bootstrap the rulebook once:
 - **The rulebook** — `/superflow:codebase-rulebook` scans the current repo and writes `CODEBASE_RULEBOOK.md`. This is the portability keystone: it's what lets the generic personas conform to *your* repo. `--refresh` to update it.
 - **Namespaced, always** — every skill and persona is addressed as `superflow:<name>`, so nothing collides with (or is silently shadowed by) commands and agents you already have in `~/.claude/`.
 - **The superflow flow** — a SessionStart hook injects a short protocol each session: a lightweight always-on skill-check (brainstorming for builds, systematic-debugging for bugs, receiving-code-review for review feedback), then a **one-time opt-in gate** before the heavier multi-persona pipeline spawns — so cost stays under your control. Rulebook-first, minimum-spawn.
+- **Works with or without a human in the loop** — interactive sessions get the opt-in question. Headless runs (`claude -p`, CI, coding agents) never stall on a question nobody can answer: superflow decides by rule and states which path it took. See below to pin the behavior.
+
+## Unattended / headless runs
+
+`SUPERFLOW_FLOW` controls the opt-in gate:
+
+| Value | Behavior |
+|---|---|
+| `auto` (default) | Ask and wait when a human is present. Headless: don't ask — single-file changes fully covered by the rulebook run direct, anything larger runs the weave, and the choice is stated in one line. |
+| `always` | Never ask; run the full weave on every non-trivial turn. |
+| `never` | Never ask, never spawn personas; work directly (still rulebook-first). |
+
+```
+SUPERFLOW_FLOW=always claude -p "add the delete endpoint"
+```
+
+Pin it with `always`/`never` when you want unattended behavior to be deterministic rather than inferred. Note that superflow deliberately does *not* try to sniff whether a human is present from the hook — the SessionStart payload is identical in both modes and env vars leak into child sessions, so the decision is left to the agent, which actually knows.
 
 ## Resync Superpowers skills from upstream
 

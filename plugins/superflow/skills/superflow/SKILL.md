@@ -23,15 +23,29 @@ For how skills are discovered and invoked in general, reference the **`using-sup
 
 > **Main agent only.** If you are a spawned persona/subagent (invoked via the Agent tool), this gate does **not** apply — don't ask the opt-in, don't re-run routing, don't delegate onward unless your task requires it. Execute your persona's work and return it. (You still consult the rulebook before any code change.)
 
-For non-trivial build/review/debug work, ask **once** and wait:
-
-> Run the full superflow for this? It would: \<one line tailored to THIS task — which personas, in what order\>. (yes / no)
+First, the cheap exits — these apply in every mode:
 
 - **Slash command** (message begins with `/`) → run it; skip the opt-in.
 - **Trivial** (single-line explanation, file read, lookup, "what does X do") → answer directly; no opt-in, no personas.
+
+For everything else, the gate depends on whether anyone can answer it. The SessionStart hook resolves `SUPERFLOW_FLOW` (`auto` default, or `always` / `never`) and states the policy in its protocol line — follow that policy over anything here if they disagree.
+
+**`auto`, human in the loop** — ask **once** and wait:
+
+> Run the full superflow for this? It would: \<one line tailored to THIS task — which personas, in what order\>. (yes / no)
+
 - **yes** → run the weave below via the Agent tool.
 - **no** → answer directly, no sub-agents; don't bring personas up again this turn.
 - **Already opted in earlier this session** for the same kind of work → skip the question and proceed.
+
+**`auto`, no human in the loop** (headless, `-p`, CI, or any session that cannot receive a reply) — do **not** ask. A question nobody can answer is not a safe default; it just stalls the run and the work happens anyway, ungoverned. Decide instead, and state the decision in one line so the transcript shows which path was taken:
+
+- single-file change fully covered by `CODEBASE_RULEBOOK.md` → work directly — e.g. `superflow: ran direct — single file, fully covered by the rulebook`;
+- anything larger, or anything the rulebook doesn't cover → run the weave.
+
+You know which mode you're in; the hook does not. It cannot: the SessionStart payload is byte-identical in both, the hook's stdio is piped either way, and env vars are inherited by child sessions. That's why this branch lives here and not in the shell script.
+
+**`always` / `never`** — no judgement call: always run the weave, or never spawn it (work directly, still rulebook-first). Set these for unattended runs where you want the behavior pinned rather than inferred.
 
 ## 3. The weave (stage → process skill + persona)
 
