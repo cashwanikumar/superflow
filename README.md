@@ -2,6 +2,62 @@
 
 superflow is a portable, self-contained Claude Code plugin that turns non-trivial coding work into a coherent pipeline — brainstorm → plan → build (TDD) → verify → review → finish — driven by specialist personas and disciplined by battle-tested process skills. It drops into **any** repository and adapts to that repo's conventions through a self-scanning `CODEBASE_RULEBOOK.md`, so it isn't tied to any particular stack.
 
+## How it works
+
+> A visual walkthrough (interactive): **https://claude.ai/code/artifact/037be08d-120b-4026-aee4-513a8de6c773**
+> _(private artifact — open the share menu on that page to let others view it.)_
+
+superflow has **two tiers**. A cheap check runs on every turn and never spawns agents; the expensive half — the full process skills *and* the persona team — sits behind a single opt-in gate. So a quick question stays quick, and neither ingredient is invoked wholesale on work that doesn't need it.
+
+```mermaid
+flowchart TD
+    A([Your message]) --> SC{{"Always-on skill-check<br/>cheap · loads a skill only if one fits · no agents"}}
+    SC -->|"trivial: question, lookup"| ANS([Answer directly — nothing spawned])
+    SC -->|"non-trivial task"| GATE{"Opt-in gate<br/>run the full flow?"}
+    GATE -->|"no · solo"| SOLO["superflow + you, in-thread<br/>only the relevant skill · consults CODEBASE_RULEBOOK.md"]
+    GATE -->|"yes · the weave"| WEAVE["Skill + persona per stage<br/>runs only the stages that apply"]
+    SOLO --> SHIP([Shipped — same quality bar])
+    WEAVE --> SHIP
+```
+
+**Saying "yes" runs the whole machine, automatically** — you don't pick skills. Each stage has a fixed skill+persona binding, so the process skills (`brainstorming`, `writing-plans`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `finishing-a-development-branch`…) load as their stage runs, and the matching personas spawn alongside. The gate is your cost control: `yes` is the expensive path, and it's what pulls in real git worktrees and the full pipeline.
+
+The **task decides how much of the team shows up** — superflow runs the minimum. Two examples, same gate and same quality bar, but the `yes` branch grows with the work.
+
+### Example 1 — a small change (4 of 9 stages)
+
+```mermaid
+flowchart TD
+    Q(["Add a rate limit to /login"]) --> G{"Opt-in gate"}
+    G -->|no| S["superflow + you<br/>test-first, in-thread"]
+    G -->|yes| F["Understand · finder"]
+    F --> D["Build · dev · TDD"]
+    D --> B["Verify · bughunter"]
+    B --> R["Review · architect"]
+    S --> Z([Shipped])
+    R --> Z
+```
+
+### Example 2 — a full-stack feature (8 of 9 stages)
+
+```mermaid
+flowchart TD
+    Q(["Add sign-in with Google (OAuth)"]) --> G{"Opt-in gate"}
+    G -->|"no · rarely here"| S["superflow + you<br/>a lot to carry solo"]
+    G -->|"yes"| U["Understand · finder"]
+    U --> P["Plan · pm + architect"]
+    P --> I["Isolate · git worktree"]
+    I --> DE["Design · designer"]
+    DE --> BU["Build · dev · TDD"]
+    BU --> V["Verify · QA + a11y"]
+    V --> RE["Review · architect"]
+    RE --> FI["Finish · auditor"]
+    S --> Z([Shipped])
+    FI --> Z
+```
+
+Only Debug sits out of the OAuth run (nothing's broken yet). The `no` branch is kept for symmetry; for a feature that size you'd almost always say `yes`.
+
 ## Install
 
 ```

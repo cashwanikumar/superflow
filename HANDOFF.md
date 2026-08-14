@@ -20,8 +20,9 @@ Provenance/credits: [`ATTRIBUTION.md`](ATTRIBUTION.md).
 
 ## Where we are (status: BUILT, PUSHED, not yet live-installed)
 - Repo: **https://github.com/cashwanikumar/superflow** — branch `main`.
-- Commits: `Initial: design spec + vendored skills` → `Scaffold installable superflow plugin`.
+- Commits: `Initial: design spec + vendored skills` → `Scaffold installable superflow plugin` → `Add HANDOFF.md` → `Add How-it-works flowcharts + explainer link to README`.
 - Structure (matches the spec): **10 agents · 5 commands · 15 skills (14 Superpowers + new `superflow`) · SessionStart hook · manifests · MIT LICENSE + ATTRIBUTION**.
+- **Visual explainer** (interactive, private): https://claude.ai/code/artifact/037be08d-120b-4026-aee4-513a8de6c773 — the two-tier engagement model + two worked-example flowcharts (rate-limit = 4/9 stages; OAuth = 8/9). The same flowcharts are now embedded in `README.md` as GitHub-native Mermaid under "How it works" (source of truth for the visuals; the artifact is a richer hand-drawn SVG version).
 - Layout:
   ```
   .claude-plugin/marketplace.json        # registers the plugin
