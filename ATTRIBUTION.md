@@ -1,14 +1,12 @@
 # Attribution
 
-This repository is an in-progress design for **superflow** — a portable Claude Code
-plugin that combines coding personas with process-discipline skills. See
-[`docs/2026-08-14-superflow-design.md`](docs/2026-08-14-superflow-design.md).
+**superflow** is a portable Claude Code plugin that combines coding personas with
+process-discipline skills. See [`docs/2026-08-14-superflow-design.md`](docs/2026-08-14-superflow-design.md).
 
-## Vendored: Superpowers skills (`superpowers-skills/`)
+## Vendored: Superpowers skills (`plugins/superflow/skills/`)
 
-The contents of `superpowers-skills/` are **verbatim copies** of skills from the
-**Superpowers** plugin, included here as design reference / to be vendored into the
-future plugin.
+Every skill under `plugins/superflow/skills/` **except `superflow/`** is a **verbatim copy**
+of a skill from the **Superpowers** plugin.
 
 - Project: **Superpowers** — https://github.com/obra/superpowers
 - Author: **Jesse Vincent** (obra)
@@ -16,9 +14,16 @@ future plugin.
 
 These files are redistributed under their original MIT license. All credit for the
 Superpowers skills belongs to their author. This project claims no ownership over them.
+They are vendored (not auto-updated) — see the README's "Resync Superpowers skills from
+upstream" note.
 
-## Personas (planned)
+## Personas & commands (`plugins/superflow/agents/`, `plugins/superflow/commands/`)
 
-The plugin's coding personas are planned as a generalized fork of Marvin's internal
-**agent-circus** plugin (personas + the codebase-rulebook mechanism), stripped of
-Marvin-specific skills. Credited here for provenance.
+The coding personas and the `codebase-rulebook` mechanism are a **generalized fork** of an
+internal **agent-circus** plugin (personas + the codebase-rulebook mechanism), stripped of
+all stack-specific skills so they work in any repository. Credited here for provenance.
+
+## superflow skill (`plugins/superflow/skills/superflow/`)
+
+The `superflow` front-door skill and this plugin's packaging are original work by
+**Ashwani Kumar**, MIT-licensed (see [`LICENSE`](LICENSE)).

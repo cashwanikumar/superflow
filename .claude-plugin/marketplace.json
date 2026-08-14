@@ -1,0 +1,15 @@
+{
+  "name": "superflow",
+  "owner": {
+    "name": "Ashwani Kumar"
+  },
+  "description": "superflow — a portable full-flow Claude Code dev toolkit: process skills woven with routed specialist personas and a self-scanning codebase rulebook.",
+  "plugins": [
+    {
+      "name": "superflow",
+      "source": "./plugins/superflow",
+      "description": "Process skills (TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) woven with routed specialist personas + a self-scanning codebase rulebook, for any repo.",
+      "version": "0.1.0"
+    }
+  ]
+}
