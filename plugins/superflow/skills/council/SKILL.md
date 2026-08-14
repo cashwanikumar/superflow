@@ -1,3 +1,8 @@
+---
+name: council
+description: Multi-voice deliberation on a hard, expensive-to-reverse architectural or product decision — each core persona weighs in independently and architect synthesizes. Use when the user runs /superflow:council or explicitly asks for a full council on a decision.
+---
+
 # Council
 
 Full multi-voice deliberation on a hard architectural or product decision. Each of the core personas weighs in independently; `architect` synthesizes everything into a single recommendation.
@@ -9,9 +14,9 @@ Use this for genuinely hard, expensive-to-reverse calls. For a quick gut-check, 
 ## How to invoke
 
 ```
-/council                                              # ask what the decision is
-/council should we move from REST to GraphQL for the public API
-/council pick a state library for the dashboard
+/superflow:council                                              # ask what the decision is
+/superflow:council should we move from REST to GraphQL for the public API
+/superflow:council pick a state library for the dashboard
 ```
 
 If the decision isn't clear, `architect` asks: *"What's the decision you want the council to weigh in on?"*

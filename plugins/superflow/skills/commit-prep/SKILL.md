@@ -1,3 +1,8 @@
+---
+name: commit-prep
+description: Summarize the current diff and propose a commit message, without committing unless explicitly asked. Use when the user runs /superflow:commit-prep or asks what changed / for a commit message before committing.
+---
+
 # Commit Prep
 
 Prepare a concise commit summary and message for the current changes.
@@ -9,7 +14,7 @@ Prepare a concise commit summary and message for the current changes.
 ## How to invoke
 
 ```
-/commit-prep
+/superflow:commit-prep
 ```
 
 ---

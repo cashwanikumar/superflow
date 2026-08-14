@@ -22,7 +22,7 @@ Routing decision for each user turn:
   If the user already opted in earlier this session for the same kind of work, skip the question and proceed.
 
 Always (every persona, every flow):
-- Before any code change, consult CODEBASE_RULEBOOK.md at the repo root and conform. If it's missing, offer to run /codebase-rulebook first. If a change would violate it, stop and ask (exception, or update the rulebook?). Never invent rules that aren't in it.
+- Before any code change, consult CODEBASE_RULEBOOK.md at the repo root and conform. If it's missing, offer to run /superflow:codebase-rulebook first. If a change would violate it, stop and ask (exception, or update the rulebook?). Never invent rules that aren't in it.
 - Load only the skill the current step touches; spawn only the personas the task needs. Don't blur the context.
 - Green tests are necessary, not sufficient: for any user-facing change, verify by exercising the real path in the running app (run it / hit the endpoint / load the page) — not just tests and lint.
 EOF

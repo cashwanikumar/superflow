@@ -1,3 +1,8 @@
+---
+name: handoff
+description: Full session handoff — what changed, current state, verified vs not, pending work, next steps, and watch-outs, so another session can resume cleanly. Use when the user runs /superflow:handoff or asks for a handoff or wrap-up before switching context.
+---
+
 # Handoff Summary
 
 Create a full session handoff so the next session (you or someone else) can resume cleanly.
@@ -9,7 +14,7 @@ Use this at the end of a work session or before switching context.
 ## How to invoke
 
 ```
-/handoff
+/superflow:handoff
 ```
 
 ---

@@ -51,7 +51,7 @@ Skip any stage that doesn't apply.
 
 ## 4. Rulebook-first
 
-Before **any** code change, consult `CODEBASE_RULEBOOK.md` at the repo root and conform to it — it is the source of truth for how this codebase does things, and it's what lets these generic personas fit *this* repo. If it's missing, offer to run **`/codebase-rulebook`** first (auditor scans the repo and writes it). If a change would violate the rulebook, stop and ask: exception, or update the rulebook? Never invent rules that aren't in it.
+Before **any** code change, consult `CODEBASE_RULEBOOK.md` at the repo root and conform to it — it is the source of truth for how this codebase does things, and it's what lets these generic personas fit *this* repo. If it's missing, offer to run **`/superflow:codebase-rulebook`** first (auditor scans the repo and writes it). If a change would violate the rulebook, stop and ask: exception, or update the rulebook? Never invent rules that aren't in it.
 
 ## 5. Minimum-spawn
 
@@ -76,8 +76,8 @@ Before **any** code change, consult `CODEBASE_RULEBOOK.md` at the repo root and 
 
 ## Commands
 
-- `/codebase-rulebook` — scan the repo → write `CODEBASE_RULEBOOK.md` (the portability keystone). `--refresh` to update.
-- `/council` — multi-voice deliberation (architect, pm, dev, bughunter, finder) on a hard decision; architect synthesizes.
-- `/daily-brief` — fast session start: where you left off + the next action.
-- `/handoff` — end-of-session handoff summary (what changed, state, pending, next steps).
-- `/commit-prep` — summarize the diff + propose a commit message (doesn't commit unless asked).
+- `/superflow:codebase-rulebook` — scan the repo → write `CODEBASE_RULEBOOK.md` (the portability keystone). `--refresh` to update.
+- `/superflow:council` — multi-voice deliberation (architect, pm, dev, bughunter, finder) on a hard decision; architect synthesizes.
+- `/superflow:daily-brief` — fast session start: where you left off + the next action.
+- `/superflow:handoff` — end-of-session handoff summary (what changed, state, pending, next steps).
+- `/superflow:commit-prep` — summarize the diff + propose a commit message (doesn't commit unless asked).

@@ -1,3 +1,8 @@
+---
+name: daily-brief
+description: Fast session start — where you left off and what to do next, reconstructed from git state and recent work. Use when the user runs /superflow:daily-brief or asks to pick up where they left off.
+---
+
 # Daily Brief
 
 Fast session start. No ceremony — just where you left off and what to do next.
@@ -9,7 +14,7 @@ Use this at the start of a session when you already know the project and want to
 ## How to invoke
 
 ```
-/daily-brief
+/superflow:daily-brief
 ```
 
 ---

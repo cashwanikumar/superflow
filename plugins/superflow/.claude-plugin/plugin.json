@@ -2,7 +2,7 @@
   "name": "superflow",
   "displayName": "superflow",
   "description": "A portable full-flow dev toolkit: process skills (TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) woven with routed specialist personas (finder, pm, designer, dev, testers, bughunter, a11y-hunter, architect, auditor), plus a self-scanning codebase rulebook so it fits any repo.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Ashwani Kumar"
   },
