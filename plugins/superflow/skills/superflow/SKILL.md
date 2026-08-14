@@ -38,10 +38,17 @@ For everything else, the gate depends on whether anyone can answer it. The Sessi
 - **no** → answer directly, no sub-agents; don't bring personas up again this turn.
 - **Already opted in earlier this session** for the same kind of work → skip the question and proceed.
 
-**`auto`, no human in the loop** (headless, `-p`, CI, or any session that cannot receive a reply) — do **not** ask. A question nobody can answer is not a safe default; it just stalls the run and the work happens anyway, ungoverned. Decide instead, and state the decision in one line so the transcript shows which path was taken:
+**`auto`, no human in the loop** (headless, `-p`, CI, or any session that cannot receive a reply) — do **not** ask. A question nobody can answer is not a safe default; it just stalls the run and the work happens anyway, ungoverned. Decide **before touching anything**, and open your reply with the choice — `superflow: weave — <reason>` or `superflow: direct — <reason>` — so the transcript shows which path was taken.
 
-- single-file change fully covered by `CODEBASE_RULEBOOK.md` → work directly — e.g. `superflow: ran direct — single file, fully covered by the rulebook`;
-- anything larger, or anything the rulebook doesn't cover → run the weave.
+**The weave is the default.** Going direct requires all three, judged from the request before you start:
+
+| | Test |
+|---|---|
+| a | The request is **one** capability. An "and" joining two features fails this. |
+| b | You can name the single file you will edit, up front. |
+| c | `CODEBASE_RULEBOOK.md` already covers that kind of change. |
+
+Unsure on any → weave. If you claimed `direct` and then find yourself editing a second file, say so plainly in the final message instead of restating the original claim. This asymmetry is deliberate: an unattended run has nobody to catch an under-governed change, and the failure mode observed in testing was a multi-feature request being waved through as "single file, fully covered by the rulebook."
 
 You know which mode you're in; the hook does not. It cannot: the SessionStart payload is byte-identical in both, the hook's stdio is piped either way, and env vars are inherited by child sessions. That's why this branch lives here and not in the shell script.
 
@@ -51,17 +58,19 @@ You know which mode you're in; the hook does not. It cannot: the SessionStart pa
 
 Skip any stage that doesn't apply.
 
+**Always dispatch with the `superflow:` prefix** — pass `superflow:dev` as the `subagent_type`, never bare `dev`. Bare names are not superflow's: they either fail to resolve, or silently hit a same-named agent in the user's own `~/.claude/agents/`, which is a different persona that has never seen this protocol. (Observed in testing: a weave that named personas bare ran four of the user's agents and only one of superflow's.) The same applies to skills — `superflow:test-driven-development`, not `test-driven-development`.
+
 | Stage | Superpowers skill | Persona |
 |---|---|---|
-| Understand | `brainstorming` | `finder` |
-| Plan | `writing-plans` | `pm` / `architect` |
-| Isolate | `using-git-worktrees` | — |
-| Design (UI) | — | `designer` |
-| Build | `test-driven-development` | `dev` (consults rulebook) |
-| Verify | `verification-before-completion` | `fe-unit-tester` / `be-unit-tester`, `bughunter`, `a11y-hunter` |
-| Review | `requesting-code-review` / `receiving-code-review` | `architect` |
-| Debug | `systematic-debugging` | `finder` → `bughunter` |
-| Finish | `finishing-a-development-branch` | `auditor` (rulebook refresh) |
+| Understand | `superflow:brainstorming` | `superflow:finder` |
+| Plan | `superflow:writing-plans` | `superflow:pm` / `superflow:architect` |
+| Isolate | `superflow:using-git-worktrees` | — |
+| Design (UI) | — | `superflow:designer` |
+| Build | `superflow:test-driven-development` | `superflow:dev` (consults rulebook) |
+| Verify | `superflow:verification-before-completion` | `superflow:fe-unit-tester` / `superflow:be-unit-tester`, `superflow:bughunter`, `superflow:a11y-hunter` |
+| Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` | `superflow:architect` |
+| Debug | `superflow:systematic-debugging` | `superflow:finder` → `superflow:bughunter` |
+| Finish | `superflow:finishing-a-development-branch` | `superflow:auditor` (rulebook refresh) |
 
 ## 4. Rulebook-first
 

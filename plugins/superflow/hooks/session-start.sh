@@ -24,9 +24,12 @@ Do not assume a human is present. Treat the session as unattended unless there i
 - Human in the loop (positive evidence) → ask once and WAIT:
     "Run the full superflow for this? It would: <one line tailored to THIS task — which personas, in what order>. (yes / no)"
   yes → run the weave. no → answer directly, no sub-agents. Already opted in earlier this session for the same kind of work → skip the question and proceed.
-- No human in the loop (headless / -p / CI / any session that cannot receive a reply) → do NOT ask; a question nobody can answer only stalls the run. Decide, then state the decision in one line ("superflow: ran direct — single file, fully covered by the rulebook"):
-    single-file change fully covered by CODEBASE_RULEBOOK.md → work directly;
-    anything larger, or anything the rulebook does not cover → run the weave.
+- No human in the loop → do NOT ask; a question nobody can answer only stalls the run. Choose BEFORE you touch anything. The FIRST LINE of your reply must be the choice, verbatim in this format and nothing else on that line: "superflow: weave — <reason>" or "superflow: direct — <reason>". This is the only audit trail an unattended run leaves; do not skip it, and do not bury it mid-reply.
+  Default is the weave. Direct is permitted only when ALL THREE hold, judged from the request before you start:
+    (a) it asks for ONE capability — an "and" joining two features fails this;
+    (b) you can name up front the single file you will edit;
+    (c) CODEBASE_RULEBOOK.md already covers that kind of change.
+  Unsure on any of them → weave. If you claimed direct and then find yourself editing a second file, say so plainly in your final message rather than restating the original claim.
   Set SUPERFLOW_FLOW=always or SUPERFLOW_FLOW=never to remove the judgement call.'
     ;;
 esac
@@ -42,7 +45,8 @@ Routing decision for each user turn:
 - Message begins with "/" → it's a slash command; run it and skip the opt-in.
 - Trivial (single-line explanation, file read, lookup, "what does X do") → answer directly; no opt-in, no delegation.
 - Otherwise (non-trivial, no slash command) → BEFORE doing any work, apply the full-flow policy below.
-  The weave: finder (map) → pm/architect (plan) → designer (UI spec) → dev (build, TDD) → fe/be-unit-tester + bughunter + a11y-hunter (verify) → architect (review). Skip whatever doesn't apply.
+  The weave: superflow:finder (map) → superflow:pm / superflow:architect (plan) → superflow:designer (UI spec) → superflow:dev (build, TDD) → superflow:fe-unit-tester / superflow:be-unit-tester + superflow:bughunter + superflow:a11y-hunter (verify) → superflow:architect (review). Skip whatever doesn't apply.
+  ALWAYS dispatch personas and skills with the superflow: prefix — subagent_type "superflow:dev", never bare "dev". A bare name either fails to resolve or silently hits a same-named agent in the user's own ~/.claude/agents/, which has never seen this protocol.
 
 __POLICY__
 
