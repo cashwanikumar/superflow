@@ -8,8 +8,8 @@
     {
       "name": "superflow",
       "source": "./plugins/superflow",
-      "description": "Process skills (TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) woven with routed specialist personas + a self-scanning codebase rulebook, for any repo.",
-      "version": "0.3.0"
+      "description": "Process skills (TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) woven with routed specialist personas + a self-scanning codebase rulebook and an opt-in per-repo specbook, for any repo.",
+      "version": "0.4.0"
     }
   ]
 }

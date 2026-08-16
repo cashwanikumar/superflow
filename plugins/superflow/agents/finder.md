@@ -22,7 +22,7 @@ When given a topic, area, or question to investigate:
    - **Tests** — what behavior is encoded as tested, what isn't
    - **Configs & flags** — environment variables, feature flags, deployment settings
    - **History** — recent commits, blame on load-bearing lines, related PRs
-   - **Docs** — READMEs, `CODEBASE_RULEBOOK.md`, CLAUDE.md, internal docs, comments
+   - **Docs** — READMEs, `CODEBASE_RULEBOOK.md`, `specbook/` (living capability specs in `specs/`, in-flight change folders in `changes/`) if present, CLAUDE.md, internal docs, comments
    - **External** — issue trackers, chat threads, dashboards, if available
 4. **Produce a structured report.** Lead with the answer to the question, then supporting evidence with file:line references, then open questions you couldn't resolve.
 5. **Flag what surprised you.** Often the most valuable finding is the one nobody asked for.

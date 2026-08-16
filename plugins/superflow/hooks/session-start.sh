@@ -34,6 +34,14 @@ Do not assume a human is present. Treat the session as unattended unless there i
     ;;
 esac
 
+# Spec layer is opt-in per repo: emit the bullet only when specbook/ exists,
+# so repos that never opted in get zero spec noise. Absence is handled (once,
+# interactively, never headless) by the superflow skill, not here.
+SPECBOOK=''
+if [ -d "${CLAUDE_PROJECT_DIR:-.}/specbook" ]; then
+  SPECBOOK='- This repo has a specbook/ (persistent spec layer). Before changing behavior, read the affected specbook/specs/<capability>.md. The preferred save location for design docs and implementation plans is the active change folder — specbook/changes/<change>/design.md and tasks.md — not docs/superpowers/. If a non-weave change alters spec-covered behavior, update the spec in the same change (headless: state the drift in your final message).'
+fi
+
 read -r -d '' CONTEXT <<'EOF' || true
 [superflow] This repo uses the superflow plugin — process skills + specialist coding personas that conform to this repo's own conventions. Apply this protocol on every turn (full detail: load the `superflow` skill).
 
@@ -52,11 +60,13 @@ __POLICY__
 
 Always (every persona, every flow):
 - Before any code change, consult CODEBASE_RULEBOOK.md at the repo root and conform. If it's missing, offer to run /superflow:codebase-rulebook first (headless: just run it). If a change would violate it, stop and ask (exception, or update the rulebook?) — headless, note the violation in your final message instead of stalling. Never invent rules that aren't in it.
+__SPECBOOK__
 - Load only the skill the current step touches; spawn only the personas the task needs. Don't blur the context.
 - Green tests are necessary, not sufficient: for any user-facing change, verify by exercising the real path in the running app (run it / hit the endpoint / load the page) — not just tests and lint. If the environment blocks that (no deps installed, no network, no permission), say so explicitly rather than implying it was verified.
 EOF
 
 CONTEXT="${CONTEXT//__POLICY__/$POLICY}"
+CONTEXT="${CONTEXT//__SPECBOOK__/$SPECBOOK}"
 
 if command -v jq >/dev/null 2>&1; then
   jq -n --arg ctx "$CONTEXT" \

@@ -70,13 +70,27 @@ Skip any stage that doesn't apply.
 | Verify | `superflow:verification-before-completion` | `superflow:fe-unit-tester` / `superflow:be-unit-tester`, `superflow:bughunter`, `superflow:a11y-hunter` |
 | Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` | `superflow:architect` |
 | Debug | `superflow:systematic-debugging` | `superflow:finder` → `superflow:bughunter` |
-| Finish | `superflow:finishing-a-development-branch` | `superflow:auditor` (rulebook refresh) |
+| Finish | `superflow:finishing-a-development-branch` | `superflow:auditor` (rulebook refresh) · `superflow:pm` (specbook fold-back, if a change folder is open) |
+
+With `specbook/` present (§5), Understand reads it, Plan writes the change folder, and Finish folds it back.
 
 ## 4. Rulebook-first
 
 Before **any** code change, consult `CODEBASE_RULEBOOK.md` at the repo root and conform to it — it is the source of truth for how this codebase does things, and it's what lets these generic personas fit *this* repo. If it's missing, offer to run **`/superflow:codebase-rulebook`** first (auditor scans the repo and writes it). If a change would violate the rulebook, stop and ask: exception, or update the rulebook? Never invent rules that aren't in it.
 
-## 5. Minimum-spawn
+## 5. Specbook (opt-in spec layer)
+
+If `specbook/` exists at the repo root, this repo keeps a persistent spec layer and the weave reads and writes it. If it does not exist: say at most one line, once per session — "No `specbook/` here; `/superflow:specbook` bootstraps a persistent spec layer if you want one." — then drop the subject. **Never create it unprompted, and never mention it in a headless run.**
+
+When present:
+
+- `specbook/specs/<capability>.md` are the living requirements. Read the affected ones at Understand; verify against their Scenarios at Verify; pass the change folder as the requirements input at Review.
+- Every change that runs the Plan stage gets `specbook/changes/YYYY-MM-DD-<slug>/`, opened by the lead. `pm` writes `proposal.md`; the technical design goes in `design.md` — **this is the repo's preferred spec location, which the `brainstorming` skill defers to** — and the plan goes in `tasks.md` — **the preferred plan location, which `writing-plans` defers to**. Include the change-folder path in every persona brief; a spawned subagent has not seen this section.
+- Work that skips Plan opens no folder. If direct work alters behavior a living spec covers, update that spec in the same change — headless, state the drift in your final message instead of stalling.
+- At Finish, `pm` folds the proposal's Spec deltas into `specs/` and moves the folder to `archive/` (`/superflow:specbook --archive`). auditor writes only `CODEBASE_RULEBOOK.md`; pm writes only inside `specbook/`.
+- The rulebook says **how** this codebase does things; the specbook says **what** it must do.
+
+## 6. Minimum-spawn
 
 - Load only the process skill the current step touches; spawn only the personas the task needs. On-demand is the default — don't blur the context by loading everything.
 - **Green tests are necessary, not sufficient.** For any user-facing change, verify by exercising the real path in the running app (run it / hit the endpoint / load the page), not just that tests and lint pass — see `verification-before-completion`.
@@ -100,6 +114,7 @@ Before **any** code change, consult `CODEBASE_RULEBOOK.md` at the repo root and 
 ## Commands
 
 - `/superflow:codebase-rulebook` — scan the repo → write `CODEBASE_RULEBOOK.md` (the portability keystone). `--refresh` to update.
+- `/superflow:specbook` — bootstrap `specbook/` (living capability specs + per-change proposal/design/tasks). Opt-in per repo. `--refresh` / `--change <slug>` / `--archive <slug>` / `--dry-run`.
 - `/superflow:council` — multi-voice deliberation (architect, pm, dev, bughunter, finder) on a hard decision; architect synthesizes.
 - `/superflow:daily-brief` — fast session start: where you left off + the next action.
 - `/superflow:handoff` — end-of-session handoff summary (what changed, state, pending, next steps).

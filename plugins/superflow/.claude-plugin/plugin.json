@@ -1,11 +1,11 @@
 {
   "name": "superflow",
   "displayName": "superflow",
-  "description": "A portable full-flow dev toolkit: process skills (TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) woven with routed specialist personas (finder, pm, designer, dev, testers, bughunter, a11y-hunter, architect, auditor), plus a self-scanning codebase rulebook so it fits any repo.",
-  "version": "0.3.0",
+  "description": "A portable full-flow dev toolkit: process skills (TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) woven with routed specialist personas (finder, pm, designer, dev, testers, bughunter, a11y-hunter, architect, auditor), plus a self-scanning codebase rulebook and an opt-in per-repo specbook (persistent spec layer) so it fits any repo.",
+  "version": "0.4.0",
   "author": {
     "name": "Ashwani Kumar"
   },
   "license": "MIT",
-  "keywords": ["personas", "skills", "routing", "tdd", "debugging", "code-review", "workflow", "conventions"]
+  "keywords": ["personas", "skills", "routing", "tdd", "debugging", "code-review", "workflow", "conventions", "specs"]
 }

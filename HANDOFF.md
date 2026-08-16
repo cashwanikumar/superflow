@@ -21,7 +21,7 @@ Provenance/credits: [`ATTRIBUTION.md`](ATTRIBUTION.md).
 ## Where we are (status: BUILT, PUSHED, not yet live-installed)
 - Repo: **https://github.com/cashwanikumar/superflow** — branch `main`.
 - Commits: `Initial: design spec + vendored skills` → `Scaffold installable superflow plugin` → `Add HANDOFF.md` → `Add How-it-works flowcharts + explainer link to README`.
-- Structure (matches the spec): **10 agents · 5 commands · 15 skills (14 Superpowers + new `superflow`) · SessionStart hook · manifests · MIT LICENSE + ATTRIBUTION**.
+- Structure: **10 agents · 21 skills (14 Superpowers + `superflow` + 6 invocable: codebase-rulebook, specbook, commit-prep, council, daily-brief, handoff) · SessionStart hook · manifests · MIT LICENSE + ATTRIBUTION**. (The former `commands/` merged into `skills/` as namespaced invocable skills.)
 - **Visual explainer** (interactive, private): https://claude.ai/code/artifact/037be08d-120b-4026-aee4-513a8de6c773 — the two-tier engagement model + two worked-example flowcharts (rate-limit = 4/9 stages; OAuth = 8/9). The same flowcharts are now embedded in `README.md` as GitHub-native Mermaid under "How it works" (source of truth for the visuals; the artifact is a richer hand-drawn SVG version).
 - Layout:
   ```
@@ -29,9 +29,9 @@ Provenance/credits: [`ATTRIBUTION.md`](ATTRIBUTION.md).
   plugins/superflow/
     .claude-plugin/plugin.json
     agents/      (10 generalized personas)
-    commands/    (codebase-rulebook, commit-prep, council, daily-brief, handoff)
     hooks/       (hooks.json + session-start.sh)
-    skills/      (superflow/ + 14 vendored Superpowers skills)
+    skills/      (superflow/ + 6 invocable: codebase-rulebook, specbook, commit-prep,
+                  council, daily-brief, handoff + 14 vendored Superpowers skills)
   docs/, LICENSE, README.md, ATTRIBUTION.md
   ```
 
@@ -42,6 +42,10 @@ Provenance/credits: [`ATTRIBUTION.md`](ATTRIBUTION.md).
    ("run the full flow? yes/no") before spawning the multi-persona pipeline.
 4. Superpowers skills **vendored verbatim** (MIT, attribution kept) — they will NOT
    auto-update; resync manually from upstream (see README).
+5. **Spec layer is opt-in per repo** — `/superflow:specbook` bootstraps `specbook/`
+   (living capability specs + per-change proposal/design/tasks, folded back at Finish);
+   spec awareness activates only when the directory exists, and headless runs never
+   auto-create or mention it.
 
 ## Verified (executed locally)
 - All 3 JSON manifests parse; `marketplace.json` matches the schema of working installed marketplaces.

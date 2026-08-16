@@ -75,6 +75,8 @@ Counts: **10 agents · 5 commands · 2 hook files · 15 skills** (14 vendored Su
 
 Install anywhere: `/plugin marketplace add <git-url>` → `/plugin install superflow`.
 
+_Note (2026-08): the `commands/` directory shown above has since merged into `skills/` — the 5 commands ship as namespaced invocable skills (`skills/<name>/SKILL.md`). The filesystem is the source of truth._
+
 ## 5. Component: generalized personas
 
 Each persona keeps its **identity + workflow**. Substantive edits only where Marvin specifics leak:
@@ -104,7 +106,7 @@ Interface for each persona: **input** = a scoped task prompt; **output** = its w
    | Verify | verification-before-completion | fe/be-unit-tester, bughunter, a11y-hunter |
    | Review | requesting- / receiving-code-review | architect |
    | Debug | systematic-debugging | finder → bughunter |
-   | Finish | finishing-a-development-branch | auditor (rulebook refresh) |
+   | Finish | finishing-a-development-branch | auditor (rulebook refresh) · pm (specbook fold-back, if a change folder is open) |
 
 4. **Rulebook-first:** before any code change, consult `CODEBASE_RULEBOOK.md`; if missing, offer to run `/codebase-rulebook` first.
 5. **Minimum-spawn:** load only the skill the step touches; spawn only the personas the task needs. Skip stages that don't apply.
@@ -112,6 +114,7 @@ Interface for each persona: **input** = a scoped task prompt; **output** = its w
 ## 7. Commands (kept, generalized)
 
 - **codebase-rulebook** — scans the current repo → writes `CODEBASE_RULEBOOK.md` (the portability keystone). `--refresh` to update.
+- **specbook** _(added 2026-08, see §12)_ — bootstraps `specbook/`, the opt-in persistent spec layer. `--refresh` / `--change <slug>` / `--archive <slug>` / `--dry-run`.
 - **commit-prep** — summarize the diff + propose a commit message (doesn't commit unless asked).
 - **council** — multi-voice deliberation (architect, pm, dev, bughunter, finder) on a hard decision.
 - **daily-brief** — session start: where you left off + next action.
@@ -140,3 +143,27 @@ Interface for each persona: **input** = a scoped task prompt; **output** = its w
 - Final plugin **name** (`superflow` is a working title).
 - Which **git host** for the marketplace repo (GitHub org? personal?).
 - Whether the SessionStart hook should be **opt-in to install** (some users may not want per-session injection).
+
+## 12. Addendum (2026-08): specbook — persistent spec layer
+
+OpenSpec-inspired ([Fission-AI/openspec](https://github.com/Fission-AI/openspec)) but superflow-native: a durable, committed spec layer in target repos, so requirements outlive the conversation. The rulebook records *how* the repo builds; the specbook records *what* it must do.
+
+Target-repo layout (created by `/superflow:specbook`):
+
+```
+specbook/
+  README.md                      # orientation stub; declares the path preferences
+  specs/<capability>.md          # living per-capability requirements (R1, R2… with Given/When/Then scenarios)
+  changes/YYYY-MM-DD-<slug>/     # one folder per in-flight change
+    proposal.md                  # pm: what & why + Spec deltas (fold-back-ready)
+    design.md                    # technical design (brainstorming's output lands here)
+    tasks.md                     # implementation plan (writing-plans' output lands here)
+  archive/YYYY-MM-DD-<slug>/     # completed changes, moved after fold-back
+```
+
+Locked rules:
+
+- **Opt-in per repo** — spec awareness activates only when `specbook/` exists; superflow never creates it unprompted, and headless runs never mention it when absent.
+- **Vendored skills untouched** — the layer rides the "user preferences override spec/plan location" escape hatch in `brainstorming`/`writing-plans`, declared by the hook, the front-door skill, and the generated `specbook/README.md`.
+- **Ownership split** — `pm` owns every write inside `specbook/` (proposal at Plan, fold-back + archive at Finish); `auditor` still writes only `CODEBASE_RULEBOOK.md`.
+- **Minimum-spawn preserved** — a change folder opens only when the Plan stage runs (or `--change`); pm joins Finish only when a change folder is open.

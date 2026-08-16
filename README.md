@@ -5,7 +5,9 @@ superflow is a portable, self-contained Claude Code plugin that turns non-trivia
 ## How it works
 
 > A visual walkthrough (interactive): **https://claude.ai/code/artifact/037be08d-120b-4026-aee4-513a8de6c773**
-> _(private artifact — open the share menu on that page to let others view it.)_
+> Flowchart explainer, specbook included: **https://claude.ai/code/artifact/4419409a-3be8-407a-85bc-4ac697c44156**
+> A session diary — one feature end to end: **https://claude.ai/code/artifact/c7fb4f0a-e98a-494d-b63c-1af06eaef45f**
+> _(private artifacts — open the share menu on a page to let others view it.)_
 
 superflow has **two tiers**. A cheap check runs on every turn and never spawns agents; the expensive half — the full process skills *and* the persona team — sits behind a single opt-in gate. So a quick question stays quick, and neither ingredient is invoked wholesale on work that doesn't need it.
 
@@ -58,6 +60,25 @@ flowchart TD
 
 Only Debug sits out of the OAuth run (nothing's broken yet). The `no` branch is kept for symmetry; for a feature that size you'd almost always say `yes`.
 
+### Example 3 — the same feature, with a specbook (opt-in)
+
+With a `specbook/` present in the target repo (see below), Plan additionally writes the change folder (proposal / design / tasks) and Finish adds `pm` to fold the change back into the living specs — so the requirements outlive the conversation.
+
+```mermaid
+flowchart TD
+    CMD(["/superflow:specbook — run once"]) -->|bootstrap| S["specbook/specs/*.md<br/>living requirements · Given/When/Then scenarios"]
+    Q(["Add sign-in with Google (OAuth)"]) --> U["Understand · finder"]
+    S -.->|reads| U
+    U --> P["Plan · pm + architect<br/>opens changes/2026-08-16-google-oauth/<br/>proposal.md · design.md · tasks.md"]
+    P --> BU["Build · dev · works tasks.md, TDD"]
+    BU --> V["Verify · bughunter tests the deltas' Scenarios"]
+    V --> RE["Review · architect · change folder = requirements input"]
+    RE --> FI["Finish · pm folds Spec deltas into specs/<br/>moves the folder to archive/"]
+    FI -->|fold-back| S
+```
+
+A run that skips Plan (like Example 1) opens no change folder even with a specbook present — minimum-spawn survives the layer. No `specbook/` in the repo? Nothing changes at all.
+
 ## Install
 
 ```
@@ -71,11 +92,18 @@ Then, in a new repo, bootstrap the rulebook once:
 /superflow:codebase-rulebook
 ```
 
+Optionally, opt the repo into the persistent spec layer:
+
+```
+/superflow:specbook
+```
+
 ## What's inside
 
 - **10 personas** (`agents/`) — `finder`, `pm`, `designer`, `dev`, `fe-unit-tester`, `be-unit-tester`, `bughunter`, `a11y-hunter`, `architect`, `auditor`. Read-only investigators, builders, testers, and reviewers, each spawned only when the task needs it.
-- **20 skills** (`skills/`) — 14 process skills vendored verbatim from [Superpowers](https://github.com/obra/superpowers) (TDD, brainstorming, systematic-debugging, writing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, finishing-a-development-branch, and more), plus the **`superflow`** front-door skill that weaves them together, plus 5 invocable workflow skills: `/superflow:codebase-rulebook`, `/superflow:commit-prep`, `/superflow:council`, `/superflow:daily-brief`, `/superflow:handoff`.
+- **21 skills** (`skills/`) — 14 process skills vendored verbatim from [Superpowers](https://github.com/obra/superpowers) (TDD, brainstorming, systematic-debugging, writing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, finishing-a-development-branch, and more), plus the **`superflow`** front-door skill that weaves them together, plus 6 invocable workflow skills: `/superflow:codebase-rulebook`, `/superflow:specbook`, `/superflow:commit-prep`, `/superflow:council`, `/superflow:daily-brief`, `/superflow:handoff`.
 - **The rulebook** — `/superflow:codebase-rulebook` scans the current repo and writes `CODEBASE_RULEBOOK.md`. This is the portability keystone: it's what lets the generic personas conform to *your* repo. `--refresh` to update it.
+- **The specbook (opt-in)** — `/superflow:specbook` bootstraps `specbook/` in your repo: living per-capability specs with scenario acceptance criteria, plus a folder per change (proposal / design / tasks) archived and folded back into the specs at Finish. The rulebook says *how* your codebase builds; the specbook says *what* it must do. Activates only when the directory exists — superflow never creates it on its own, and headless runs never mention it.
 - **Namespaced, always** — every skill and persona is addressed as `superflow:<name>`, so nothing collides with (or is silently shadowed by) commands and agents you already have in `~/.claude/`.
 - **The superflow flow** — a SessionStart hook injects a short protocol each session: a lightweight always-on skill-check (brainstorming for builds, systematic-debugging for bugs, receiving-code-review for review feedback), then a **one-time opt-in gate** before the heavier multi-persona pipeline spawns — so cost stays under your control. Rulebook-first, minimum-spawn.
 - **Works with or without a human in the loop** — interactive sessions get the opt-in question. Headless runs (`claude -p`, CI, coding agents) never stall on a question nobody can answer: superflow decides by rule and states which path it took. See below to pin the behavior.
@@ -98,7 +126,7 @@ Pin it with `always`/`never` when you want unattended behavior to be determinist
 
 ## Resync Superpowers skills from upstream
 
-The 14 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `commit-prep/`, `council/`, `daily-brief/`, and `handoff/`, which are ours) are copied verbatim from Superpowers and do **not** auto-update. To resync from upstream, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, keeping each skill's files intact. The `superflow/` skill is ours — don't overwrite it.
+The 14 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, and `handoff/`, which are ours) are copied verbatim from Superpowers and do **not** auto-update. To resync from upstream, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, keeping each skill's files intact. The `superflow/` skill is ours — don't overwrite it.
 
 ## Credits
 

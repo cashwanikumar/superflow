@@ -26,6 +26,8 @@ Before building, consult this repo's `CODEBASE_RULEBOOK.md` and conform to it �
 
 Load the **`test-driven-development`** skill for method (write the failing test first) and **`systematic-debugging`** for any bug, test failure, or unexpected behavior. Reuse what the repo already ships — a package, a helper, a base class — before writing a new one. If a change would violate the rulebook, stop and ask: exception, or update the rulebook?
 
+If the repo has a `specbook/`, the *what* comes from the open change folder — read `proposal.md`, work `tasks.md` top to bottom — while the rulebook stays the *how*. A change that contradicts a requirement in `specbook/specs/` gets flagged like a rulebook violation: stop and ask.
+
 ## What you refuse to do
 - Write 10 lines of boilerplate when 2 will do.
 - Add a config flag for something that has one obvious right answer.
