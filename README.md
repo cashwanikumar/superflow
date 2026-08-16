@@ -124,6 +124,10 @@ SUPERFLOW_FLOW=always claude -p "add the delete endpoint"
 
 Pin it with `always`/`never` when you want unattended behavior to be deterministic rather than inferred. Note that superflow deliberately does *not* try to sniff whether a human is present from the hook — the SessionStart payload is identical in both modes and env vars leak into child sessions, so the decision is left to the agent, which actually knows.
 
+There's no separate headless setup — same plugin, same hook, same skills fire either way. On `auto`, when the agent decides for itself (no one to ask), it states the choice as the first line of its reply, verbatim: `superflow: weave — <reason>` or `superflow: direct — <reason>`. That line is the only audit trail an unattended run leaves, so it's worth grepping CI logs for.
+
+One thing `SUPERFLOW_FLOW` never touches: the specbook. Bootstrapping `specbook/` always requires you to run `/superflow:specbook` yourself, at least once, interactively — `always` doesn't make headless runs create it, and `never` isn't needed to suppress it. Headless runs simply never create or mention it, full stop.
+
 ## Resync Superpowers skills from upstream
 
 The 14 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, and `handoff/`, which are ours) are copied verbatim from Superpowers and do **not** auto-update. To resync from upstream, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, keeping each skill's files intact. The `superflow/` skill is ours — don't overwrite it.
