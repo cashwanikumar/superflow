@@ -2,6 +2,8 @@
 
 superflow is a portable, self-contained Claude Code plugin that turns non-trivial coding work into a coherent pipeline — brainstorm → plan → build (TDD) → verify → review → finish — driven by specialist personas and disciplined by battle-tested process skills. It drops into **any** repository and adapts to that repo's conventions through a self-scanning `CODEBASE_RULEBOOK.md`, so it isn't tied to any particular stack.
 
+> **Built on [Superpowers](https://github.com/obra/superpowers)** by [Jesse Vincent (obra)](https://github.com/obra), MIT-licensed. The process discipline in superflow — TDD, brainstorming, systematic debugging, plan writing, code review, verification, git worktrees — is Superpowers' work, vendored here verbatim with its license intact. superflow adds the persona layer, the rulebook, the specbook, and the routing that decides which of them runs. If you want the process skills on their own, install Superpowers directly. Full provenance: [ATTRIBUTION.md](ATTRIBUTION.md).
+
 ## How it works
 
 > A visual walkthrough (interactive): **https://claude.ai/code/artifact/037be08d-120b-4026-aee4-513a8de6c773**
@@ -81,12 +83,40 @@ A run that skips Plan (like Example 1) opens no change folder even with a specbo
 
 ## Install
 
+You need [Claude Code](https://claude.com/claude-code) and git access to this repo. superflow ships as a **plugin marketplace**, so installing is two steps: register the marketplace, then install the plugin from it.
+
+### In a Claude Code session
+
+Type these as slash commands at the prompt:
+
 ```
 /plugin marketplace add https://github.com/cashwanikumar/superflow
 /plugin install superflow
 ```
 
-Then, in a new repo, bootstrap the rulebook once:
+Restart the session so the plugin's SessionStart hook fires. To confirm it loaded, run `/plugin` and check superflow is enabled — you should see 10 personas and 21 skills, all addressed as `superflow:<name>`.
+
+### From the terminal
+
+The same thing without opening a session — useful for scripting, CI images, and dotfiles:
+
+```bash
+claude plugin marketplace add https://github.com/cashwanikumar/superflow
+claude plugin install superflow@superflow            # add --scope to control reach
+claude plugin details superflow                      # inventory + projected token cost
+```
+
+`--scope` decides who gets it:
+
+| Scope | Where it applies |
+|---|---|
+| `user` (default) | every repo you open |
+| `project` | this repo, shared with your team via committed settings |
+| `local` | this repo, your machine only (gitignored `.claude/settings.local.json`) |
+
+### First run in a repo
+
+Bootstrap the rulebook once — this is what teaches the generic personas your repo's conventions:
 
 ```
 /superflow:codebase-rulebook
@@ -97,6 +127,16 @@ Optionally, opt the repo into the persistent spec layer:
 ```
 /superflow:specbook
 ```
+
+### Updating and removing
+
+```bash
+claude plugin marketplace update superflow    # pull the latest marketplace metadata
+claude plugin update superflow                # restart required to apply
+claude plugin uninstall superflow@superflow   # add the same --scope you installed with
+```
+
+Note that superflow never claims a bare command name — everything is `superflow:<name>`, so it can't shadow, or be shadowed by, commands and agents already in your `~/.claude/`.
 
 ## What's inside
 
