@@ -144,12 +144,73 @@ Note that superflow never claims a bare command name — everything is `superflo
 - **24 skills** (`skills/`) — 14 process skills vendored verbatim from [Superpowers](https://github.com/obra/superpowers) (TDD, brainstorming, systematic-debugging, writing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, finishing-a-development-branch, and more), plus the **`superflow`** front-door skill that weaves them together, plus 7 invocable commands: `/superflow:codebase-rulebook`, `/superflow:specbook`, `/superflow:commit-prep`, `/superflow:council`, `/superflow:design`, `/superflow:daily-brief`, `/superflow:handoff` — and 2 loaded on demand rather than typed: `ui-reduction` (the declutter method behind designer's gate) and `handoff-contracts` (JSON schemas so a persona→persona handoff fails loudly instead of degrading into lossy prose).
 - **2 workflows** (`workflows/`) — deterministic scripts for the two calls expensive enough to be worth taking out of the model's hands. `/superflow:council` runs `council-vote`: every voice returns through a JSON schema, so a dropped or abstaining voice is *reported*, never silently missing from the tally. `/superflow:review-sweep` partitions a large diff into coherent slices, runs one `bughunter` per slice, then sends a dedicated skeptic at each finding — surviving findings come back tiered CONFIRMED (traced end to end) or PLAUSIBLE (undecidable from the code alone, and never dropped for want of a repro). Workflows need Dynamic workflows enabled; on Pro, turn them on in `/config`.
 - **A mock-locked design loop** — `/superflow:design` takes a screen from spec to an interactive mock the user clicks and locks, and only then writes the build brief. **Specs propose; mocks decide.** On complex or cluttered screens, `designer` first walks the `ui-reduction` method — structure before styling, with a kept/moved/cut table so nothing disappears silently.
-- **An optional commit gate** — set `SUPERFLOW_COMMIT_GATE=1` (or `{"commitGate": true}` in `.claude/superflow.json`) and a bare `git commit` is blocked until it goes through `/superflow:commit-prep`. **Off by default:** superflow installs at user scope, and a plugin that silently blocks commits in every repo you open is a hostile default.
+- **An optional commit gate** — a bare `git commit` can be blocked until it goes through `/superflow:commit-prep`. Off by default; see [Optional setup](#the-commit-gate).
 - **The rulebook** — `/superflow:codebase-rulebook` scans the current repo and writes `CODEBASE_RULEBOOK.md`. This is the portability keystone: it's what lets the generic personas conform to *your* repo. `--refresh` to update it.
 - **The specbook (opt-in)** — `/superflow:specbook` bootstraps `specbook/` in your repo: living per-capability specs with scenario acceptance criteria, plus a folder per change (proposal / design / tasks) archived and folded back into the specs at Finish. The rulebook says *how* your codebase builds; the specbook says *what* it must do. Activates only when the directory exists — superflow never creates it on its own, and headless runs never mention it.
 - **Namespaced, always** — every skill and persona is addressed as `superflow:<name>`, so nothing collides with (or is silently shadowed by) commands and agents you already have in `~/.claude/`.
 - **The superflow flow** — a SessionStart hook injects a short protocol each session: a lightweight always-on skill-check (brainstorming for builds, systematic-debugging for bugs, receiving-code-review for review feedback), then a **one-time opt-in gate** before the heavier multi-persona pipeline spawns — so cost stays under your control. Rulebook-first, minimum-spawn.
 - **Works with or without a human in the loop** — interactive sessions get the opt-in question. Headless runs (`claude -p`, CI, coding agents) never stall on a question nobody can answer: superflow decides by rule and states which path it took. See below to pin the behavior.
+
+## Optional setup
+
+Everything below is off unless you turn it on. superflow works fully without any of it — these buy extra capability at the cost of installing or configuring something.
+
+### External voices for the council
+
+`/superflow:council` runs a persona-only roster by default: `architect`, `bughunter`, `dev`, `pm`, plus `finder` grounding when the decision is code-tied. That costs nothing beyond the session.
+
+You can additionally route votes through **other vendors' CLIs**, so a hard call gets judged by models that don't share Claude's blind spots. Install whichever CLIs you want (`codex`, `gemini`, `claude`), then declare them in `.claude/superflow.json` — repo-local, or `~/.claude/superflow.json` for all repos:
+
+```json
+{
+  "providers": {
+    "codex":  { "command": "codex exec", "model": "gpt-5.6-sol" },
+    "gemini": { "command": "gemini -p",  "model": "gemini-2.5-pro" },
+    "claude": { "command": "claude -p",  "model": "fable" }
+  }
+}
+```
+
+`claude` is a legitimate third entry, not a duplicate of the persona voices: it's a fresh `claude -p` subprocess with no shared context, which is a different thing from a persona spawned by the agent chairing the council. Model names go stale — each CLI only accepts its own set, so if one is rejected the workflow retries once without the `--model` flag rather than failing the voice.
+
+Then ask for them by name — and only then:
+
+```
+/superflow:council should we move the runner off Celery — include codex and gemini
+```
+
+**These bill your own vendor accounts, so they are never added on your behalf.** The council skill confirms the spend with you before launching, the workflow refuses any provider you didn't explicitly name in that turn, and a provider is never carried over from an earlier council. A missing CLI returns an abstain with a reason, not a crash.
+
+What the workflow does to each external voice, whether or not you ask for it:
+
+- **Sanitizes before sending.** `.env*` contents, key/token patterns (`sk-*`, `AKIA*`, `ghp_*`, `xox*-*`, PEM blocks), credentialed connection strings, signed URLs, and anything from `/etc/`, `~/.ssh/`, `~/.aws/` are refused. If a pattern hits inside the constructed prompt, the run **aborts that voice** and returns an abstain naming the pattern *class* — never the secret.
+- **Runs the CLI from an empty temp directory**, with its file tools disabled where the CLI supports it, so an agentic vendor CLI can't wander your repo on its own. The prompt goes in via a `chmod 600` temp file, deleted on success and failure alike.
+- **Never silently drops a vote.** Unparseable output comes back as an abstain carrying the raw text; abstains are reported in the synthesis and never counted as votes. Each external voice also returns a one-line `sent_summary` — what was actually transmitted — for post-run audit.
+
+### graphify (code graph)
+
+`finder` and `bughunter` can use a local tree-sitter code graph to answer structure questions in one call instead of ten file reads — `finder` for "what does this symbol touch", `bughunter` for the reverse direction nobody checks by hand: "what breaks if this changes".
+
+It is **optional and not bundled** — graphify is a Python package with native tree-sitter grammars, so it can't ride along in a markdown plugin. Install it yourself:
+
+```bash
+pipx install graphifyy
+graphify extract . --code-only     # once per repo — builds graphify-out/
+graphify update .                  # incremental refresh, seconds, no LLM
+echo "graphify-out/" >> .gitignore
+```
+
+Without it, nothing breaks and nothing nags: both personas fall back to glob/grep silently and never ask you to install anything mid-task. The graph is an accelerator, not a requirement — and it gives you *structure*, never semantics, so anything load-bearing still gets read from the source.
+
+### The commit gate
+
+Off by default. Turn it on per repo and a bare `git commit` is blocked until it goes through `/superflow:commit-prep`:
+
+```bash
+export SUPERFLOW_COMMIT_GATE=1              # or: {"commitGate": true} in .claude/superflow.json
+```
+
+A prepared commit opts through by including the token `COMMIT_PREP_OK` in the command. It stays off by default because superflow installs at user scope, and a plugin that silently blocks commits in every repo you open is a hostile default.
 
 ## Unattended / headless runs
 
