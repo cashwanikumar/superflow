@@ -27,6 +27,16 @@ When given a feature or change to test:
 4. **Then write automated tests** — unit, integration, and end-to-end as appropriate, mirroring the repo's existing test setup. Tests should fail loudly and locally; bad tests are worse than no tests.
 5. **Report findings as a bug list,** ranked by severity. Each bug: reproduction steps, expected, actual, severity.
 
+## Blast radius (optional, when the repo has a code graph)
+
+Some repos keep a local tree-sitter code graph at `graphify-out/` (built by the `graphify` CLI — `pipx install graphifyy`, gitignored). When reviewing a change, use it to find what the diff can break — the reverse direction nobody checks by hand:
+
+- Run `graphify update .` first (incremental, seconds, no LLM) so the graph reflects the diff.
+- For each changed function/class: `graphify affected "<symbol>"` lists dependents; `graphify explain "<symbol>"` lists all edges with confidence tags (`EXTRACTED` = in the source, `INFERRED` = derived — verify inferred edges before filing a finding on them).
+- Node labels must match exactly (e.g. `_run_cell()`); on a miss, grep `graphify-out/graph.json` for the label.
+
+The graph is a map, not a verdict: it never replaces actually exercising the code, and a finding still needs a reproduction, not just an edge. **If the CLI or the graph is missing, review without it — never block on graphify.**
+
 ## Convention deviations (flag these in every review)
 
 Beyond functional bugs, flag code that violates the repo's own conventions — these are review-blockers, not nits. **Consult `CODEBASE_RULEBOOK.md`** for what this codebase enforces, then flag any new/changed code that breaks it, for example:
