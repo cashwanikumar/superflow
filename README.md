@@ -86,8 +86,8 @@ The **task decides how much of the team shows up** — superflow runs the minimu
 flowchart TD
     Q(["Add a rate limit to /login"]) --> G{"Opt-in gate"}
     G -->|no| S["superflow + you<br/>test-first, in-thread"]
-    G -->|yes| F["Understand · finder"]
-    F --> D["Build · dev · TDD"]
+    G -->|yes| F["Understand · sherlock"]
+    F --> D["Build · codezilla · TDD"]
     D --> B["Verify · bughunter"]
     B --> R["Review · architect"]
     S --> Z([Shipped])
@@ -100,11 +100,11 @@ flowchart TD
 flowchart TD
     Q(["Add sign-in with Google (OAuth)"]) --> G{"Opt-in gate"}
     G -->|"no · rarely here"| S["superflow + you<br/>a lot to carry solo"]
-    G -->|"yes"| U["Understand · finder"]
-    U --> P["Plan · pm + architect"]
+    G -->|"yes"| U["Understand · sherlock"]
+    U --> P["Plan · bossbaby + architect"]
     P --> I["Isolate · git worktree"]
     I --> DE["Design · designer<br/>spec → mock → <b>you lock it</b>"]
-    DE --> BU["Build · dev · TDD"]
+    DE --> BU["Build · codezilla · TDD"]
     BU --> V["Verify · QA + a11y"]
     V --> RE["Review · architect"]
     RE --> FI["Finish · auditor"]
@@ -116,18 +116,18 @@ Only Debug sits out of the OAuth run (nothing's broken yet). The `no` branch is 
 
 ### Example 3 — the same feature, with a specbook (opt-in)
 
-With a `specbook/` present in the target repo (see below), Plan additionally writes the change folder (proposal / design / tasks) and Finish adds `pm` to fold the change back into the living specs — so the requirements outlive the conversation.
+With a `specbook/` present in the target repo (see below), Plan additionally writes the change folder (proposal / design / tasks) and Finish adds `bossbaby` to fold the change back into the living specs — so the requirements outlive the conversation.
 
 ```mermaid
 flowchart TD
     CMD(["/superflow:specbook — run once"]) -->|bootstrap| S["specbook/specs/*.md<br/>living requirements · Given/When/Then scenarios"]
-    Q(["Add sign-in with Google (OAuth)"]) --> U["Understand · finder"]
+    Q(["Add sign-in with Google (OAuth)"]) --> U["Understand · sherlock"]
     S -.->|reads| U
-    U --> P["Plan · pm + architect<br/>opens changes/2026-08-16-google-oauth/<br/>proposal.md · design.md · tasks.md"]
-    P --> BU["Build · dev · works tasks.md, TDD"]
+    U --> P["Plan · bossbaby + architect<br/>opens changes/2026-08-16-google-oauth/<br/>proposal.md · design.md · tasks.md"]
+    P --> BU["Build · codezilla · works tasks.md, TDD"]
     BU --> V["Verify · bughunter tests the deltas' Scenarios"]
     V --> RE["Review · architect · change folder = requirements input"]
-    RE --> FI["Finish · pm folds Spec deltas into specs/<br/>moves the folder to archive/"]
+    RE --> FI["Finish · bossbaby folds Spec deltas into specs/<br/>moves the folder to archive/"]
     FI -->|fold-back| S
 ```
 
@@ -135,7 +135,7 @@ A run that skips Plan (like Example 1) opens no change folder even with a specbo
 
 ## What's inside
 
-- **10 personas** (`agents/`) — `finder`, `pm`, `designer`, `dev`, `fe-unit-tester`, `be-unit-tester`, `bughunter`, `a11y-hunter`, `architect`, `auditor`. Read-only investigators, builders, testers, and reviewers, each spawned only when the task needs it.
+- **10 personas** (`agents/`) — `sherlock`, `bossbaby`, `designer`, `codezilla`, `fe-unit-tester`, `be-unit-tester`, `bughunter`, `a11y-hunter`, `architect`, `auditor`. Read-only investigators, builders, testers, and reviewers, each spawned only when the task needs it.
 - **24 skills** (`skills/`) — 14 process skills vendored verbatim from [Superpowers](https://github.com/obra/superpowers) (TDD, brainstorming, systematic-debugging, writing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, finishing-a-development-branch, and more), plus the **`superflow`** front-door skill that weaves them together, plus 7 invocable commands: `/superflow:codebase-rulebook`, `/superflow:specbook`, `/superflow:commit-prep`, `/superflow:council`, `/superflow:design`, `/superflow:daily-brief`, `/superflow:handoff` — and 2 loaded on demand rather than typed: `ui-reduction` (the declutter method behind designer's gate) and `handoff-contracts` (JSON schemas so a persona→persona handoff fails loudly instead of degrading into lossy prose).
 - **2 workflows** (`workflows/`) — deterministic scripts for the two calls expensive enough to be worth taking out of the model's hands. `/superflow:council` runs `council-vote`: every voice returns through a JSON schema, so a dropped or abstaining voice is *reported*, never silently missing from the tally. `/superflow:review-sweep` partitions a large diff into coherent slices, runs one `bughunter` per slice, then sends a dedicated skeptic at each finding — surviving findings come back tiered CONFIRMED (traced end to end) or PLAUSIBLE (undecidable from the code alone, and never dropped for want of a repro). Workflows need Dynamic workflows enabled; on Pro, turn them on in `/config`.
 - **A mock-locked design loop** — `/superflow:design` takes a screen from spec to an interactive mock the user clicks and locks, and only then writes the build brief. **Specs propose; mocks decide.** On complex or cluttered screens, `designer` first walks the `ui-reduction` method — structure before styling, with a kept/moved/cut table so nothing disappears silently.
@@ -152,7 +152,7 @@ Everything below is off unless you turn it on. superflow works fully without any
 
 ### External voices for the council
 
-`/superflow:council` runs a persona-only roster by default: `architect`, `bughunter`, `dev`, `pm`, plus `finder` grounding when the decision is code-tied. That costs nothing beyond the session.
+`/superflow:council` runs a persona-only roster by default: `architect`, `bughunter`, `codezilla`, `bossbaby`, plus `sherlock` grounding when the decision is code-tied. That costs nothing beyond the session.
 
 You can additionally route votes through **other vendors' CLIs**, so a hard call gets judged by models that don't share Claude's blind spots. Install whichever CLIs you want (`codex`, `gemini`, `claude`), then declare them in `.claude/superflow.json` — repo-local, or `~/.claude/superflow.json` for all repos:
 
@@ -184,7 +184,7 @@ What the workflow does to each external voice, whether or not you ask for it:
 
 ### graphify (code graph)
 
-`finder` and `bughunter` can use a local tree-sitter code graph to answer structure questions in one call instead of ten file reads — `finder` for "what does this symbol touch", `bughunter` for the reverse direction nobody checks by hand: "what breaks if this changes".
+`sherlock` and `bughunter` can use a local tree-sitter code graph to answer structure questions in one call instead of ten file reads — `sherlock` for "what does this symbol touch", `bughunter` for the reverse direction nobody checks by hand: "what breaks if this changes".
 
 It is **optional and not bundled** — graphify is a Python package with native tree-sitter grammars, so it can't ride along in a markdown plugin. Install it yourself:
 

@@ -30,7 +30,7 @@ Opt-in, once per repo. Everything superflow used to know only in the conversatio
 | | |
 |---|---|
 | **`CODEBASE_RULEBOOK.md`** | Conventions. *How* this repo builds things — stack, layout, test setup, lint rules. Written by `auditor`. |
-| **`specbook/`** | Requirements. *What* the system must do — living per-capability specs with Given/When/Then scenarios. Written by `pm`. |
+| **`specbook/`** | Requirements. *What* the system must do — living per-capability specs with Given/When/Then scenarios. Written by `bossbaby`. |
 
 ```
 specbook/
@@ -40,7 +40,7 @@ specbook/
 │   └── invoices.md
 ├── changes/                         # one folder per in-flight change
 │   └── 2026-08-16-google-oauth/
-│       ├── proposal.md              #   pm — what & why + Spec deltas
+│       ├── proposal.md              #   bossbaby — what & why + Spec deltas
 │       ├── design.md                #   technical design (brainstorming lands here)
 │       └── tasks.md                 #   checkbox plan (writing-plans lands here)
 └── archive/                         # finished changes, moved after fold-back
@@ -48,14 +48,14 @@ specbook/
 
 ```mermaid
 flowchart LR
-    CMD(["/superflow:specbook<br/>run once · pm leads, finder maps"]) -->|bootstrap| SPECS["specs/<br/>auth.md · invoices.md · …<br/>living requirements"]
+    CMD(["/superflow:specbook<br/>run once · bossbaby leads, sherlock maps"]) -->|bootstrap| SPECS["specs/<br/>auth.md · invoices.md · …<br/>living requirements"]
     PLAN["Plan stage<br/>(or --change slug)"] -->|opens| CH["changes/date-slug/<br/>proposal.md · design.md · tasks.md"]
-    CH -->|"fold Spec deltas — Finish · pm"| SPECS
+    CH -->|"fold Spec deltas — Finish · bossbaby"| SPECS
     CH -->|move| ARC["archive/<br/>done changes"]
     SPECS -.->|"read at Understand · checked at Verify"| USE([the weave])
 ```
 
-**The fold-back is the whole point.** A proposal writes its requirements as *Spec deltas* — the future spec text, in full. At Finish, `pm` applies those deltas to `specs/` verbatim and archives the folder, so the living specs always describe the shipped system. `auditor` still writes only the rulebook; the two never touch each other's files.
+**The fold-back is the whole point.** A proposal writes its requirements as *Spec deltas* — the future spec text, in full. At Finish, `bossbaby` applies those deltas to `specs/` verbatim and archives the folder, so the living specs always describe the shipped system. `auditor` still writes only the rulebook; the two never touch each other's files.
 
 Activation is a single directory check: no `specbook/`, no spec behavior. superflow will mention the option at most once per interactive session and never creates the directory on its own — a repo that hasn't opted in pays zero overhead.
 
@@ -69,8 +69,8 @@ Activation is a single directory check: no `specbook/`, no spec behavior. superf
 
 ```mermaid
 flowchart LR
-    Q(["“rate-limit /login”<br/>gate → yes"]) --> U["Understand<br/>finder"]
-    U --> B["Build<br/>dev · TDD"]
+    Q(["“rate-limit /login”<br/>gate → yes"]) --> U["Understand<br/>sherlock"]
+    U --> B["Build<br/>codezilla · TDD"]
     B --> V["Verify<br/>bughunter"]
     V --> R["Review<br/>architect → ship"]
 ```
@@ -83,13 +83,13 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    U["Understand · finder"] --> P["Plan · pm + architect"]
+    U["Understand · sherlock"] --> P["Plan · bossbaby + architect"]
     P --> I["Isolate · git worktree"]
     I --> D["Design · designer"]
-    D --> B["Build · dev · TDD"]
+    D --> B["Build · codezilla · TDD"]
     B --> V["Verify · QA + a11y"]
     V --> R["Review · architect"]
-    R --> F["Finish · auditor + pm"]
+    R --> F["Finish · auditor + bossbaby"]
 
     SPEC["specs/auth.md<br/>the affected living spec"]
     CH["changes/2026-08-16-google-oauth/<br/>proposal.md · design.md · tasks.md"]
@@ -139,7 +139,7 @@ flowchart LR
 
 | Command | What it does |
 |---|---|
-| `/superflow:specbook` | bootstrap — pm + finder derive baseline capability specs from the codebase |
+| `/superflow:specbook` | bootstrap — bossbaby + sherlock derive baseline capability specs from the codebase |
 | `/superflow:specbook --refresh [capability]` | re-derive vs current code; `<!-- human-edited -->` sections survive |
 | `/superflow:specbook --change <slug>` | open a change folder by hand (the Plan stage normally does this) |
 | `/superflow:specbook --archive <slug>` | fold Spec deltas into `specs/`, move the folder to `archive/` |
@@ -159,12 +159,12 @@ For hard, expensive-to-reverse calls. The skill is the front door: it confirms t
 
 ```mermaid
 flowchart LR
-    S(["/superflow:council<br/>confirm decision + roster + spend"]) --> G["Ground · finder<br/>code excerpts (skipped if not code-tied)"]
+    S(["/superflow:council<br/>confirm decision + roster + spend"]) --> G["Ground · sherlock<br/>code excerpts (skipped if not code-tied)"]
     G --> V["Voices — in parallel, independent"]
     V --> A["architect · technical"]
     V --> B["bughunter · failure modes"]
-    V --> C["dev · shippability"]
-    V --> D["pm · product value"]
+    V --> C["codezilla · shippability"]
+    V --> D["bossbaby · product value"]
     V --> E["external CLIs<br/>only if you named them"]
     A --> SY["Synthesize · architect<br/>tally · quote disagreements verbatim"]
     B --> SY

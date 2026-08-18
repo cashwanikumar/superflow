@@ -87,7 +87,7 @@ _Sections marked <!-- human-edited --> are preserved on refresh._
 - Monorepo: yes/no (if yes, list workspace roots)
 - Common commands:
   - install: ...
-  - dev: ...
+  - codezilla: ...
   - build: ...
   - test: ...
   - lint: ...
@@ -185,11 +185,11 @@ _Sections marked <!-- human-edited --> are preserved on refresh._
 
 Once `CODEBASE_RULEBOOK.md` exists at the repo root, every code change must consult it. This is reinforced by superflow (its session-start hook injects the reminder; the `superflow` skill carries the detail):
 
-- Before any non-trivial code change, dev reads `CODEBASE_RULEBOOK.md` (or the relevant section).
+- Before any non-trivial code change, codezilla reads `CODEBASE_RULEBOOK.md` (or the relevant section).
 - New files conform to the conventions documented there.
 - Tests are written per the "Tests" section.
 - API/component/asset conventions are followed.
-- If a change would violate the rulebook, dev flags it and asks the user — either the rule needs an exception, or the rulebook needs an update.
+- If a change would violate the rulebook, codezilla flags it and asks the user — either the rule needs an exception, or the rulebook needs an update.
 
 `bughunter` also consults the rulebook to identify deviations during reviews.
 

@@ -33,7 +33,7 @@ If the decision isn't clear, ask: *"What's the decision you want the council to 
 
 ### 2. Confirm the roster and any external spend
 
-The default roster is persona-only and costs nothing beyond this session: `architect` (technical), `bughunter` (failure modes), `dev` (shippability), `pm` (product value), plus `finder` grounding when the decision is code-tied.
+The default roster is persona-only and costs nothing beyond this session: `architect` (technical), `bughunter` (failure modes), `codezilla` (shippability), `bossbaby` (product value), plus `sherlock` grounding when the decision is code-tied.
 
 External model CLIs (`codex`, `gemini`, `claude`) can be added as extra voices — **but only ones the user explicitly names in this turn.** These call third-party CLIs installed on the user's machine and may bill the user's own vendor accounts. Never add one on your own initiative, and never carry a provider over from an earlier council. If the user asks for external voices, confirm the spend before launching.
 
@@ -52,9 +52,9 @@ Workflow({
   name: "council-vote",
   args: {
     decision:  "<the confirmed one-sentence decision>",
-    code_tied: true,                    // false for pure product/process calls — skips finder
+    code_tied: true,                    // false for pure product/process calls — skips sherlock
     providers: [],                      // ONLY user-confirmed external CLIs
-    hints:     ["path/to/relevant.ts"]  // optional starting points for finder
+    hints:     ["path/to/relevant.ts"]  // optional starting points for sherlock
   }
 })
 ```

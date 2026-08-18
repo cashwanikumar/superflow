@@ -1,6 +1,6 @@
 ---
 name: handoff-contracts
-description: JSON schemas for persona-to-persona handoffs in the conversational weave — finder→dev, designer→dev, bughunter→lead. Load when running a multi-persona weave so a handoff fails loudly instead of degrading into lossy prose. Workflow scripts get this for free via agent(..., {schema}); this is the same guarantee for the in-chat relay.
+description: JSON schemas for persona-to-persona handoffs in the conversational weave — sherlock→codezilla, designer→codezilla, bughunter→lead. Load when running a multi-persona weave so a handoff fails loudly instead of degrading into lossy prose. Workflow scripts get this for free via agent(..., {schema}); this is the same guarantee for the in-chat relay.
 ---
 
 # Handoff contracts
@@ -14,10 +14,10 @@ Workflow scripts get this for free via `agent(..., {schema})` — the harness va
 1. When spawning a weave persona, the spawn prompt MUST end with:
    > End your report with a single fenced ```json block matching the `<name>` schema in the `superflow:handoff-contracts` skill. Prose before it is welcome; the JSON block is the handoff.
 2. Before passing the handoff downstream, validate that the required fields are present and non-empty.
-3. Invalid or missing block → re-ask that agent **once** (via SendMessage) to emit the block. Still invalid → **fail loudly to the user** ("finder's handoff was malformed — fix before dev starts"). Never silently continue on prose.
+3. Invalid or missing block → re-ask that agent **once** (via SendMessage) to emit the block. Still invalid → **fail loudly to the user** ("sherlock's handoff was malformed — fix before codezilla starts"). Never silently continue on prose.
 4. Pass the JSON block **verbatim** into the next persona's prompt — do not paraphrase it.
 
-## Schema: `premap` — finder → dev (or any implementer)
+## Schema: `premap` — sherlock → codezilla (or any implementer)
 
 ```json
 {
@@ -28,13 +28,13 @@ Workflow scripts get this for free via `agent(..., {schema})` — the harness va
   "constraints": ["hard constraints the implementation must respect (invariants, contracts, CODEBASE_RULEBOOK.md rules)"],
   "gotchas": ["surprises that will bite a naive implementation"],
   "out_of_scope": ["things deliberately NOT to touch"],
-  "open_questions": ["anything finder could not resolve — empty array if none"]
+  "open_questions": ["anything sherlock could not resolve — empty array if none"]
 }
 ```
 
 Required: every field. `open_questions: []` is valid; a missing `constraints` field is not.
 
-## Schema: `design-brief` — designer → dev
+## Schema: `design-brief` — designer → codezilla
 
 ```json
 {
@@ -44,7 +44,7 @@ Required: every field. `open_questions: []` is valid; a missing `constraints` fi
   "tokens": ["semantic tokens used, by the names the project actually defines — never raw hex"],
   "states": ["empty / loading / error / hover / focus — what each looks like"],
   "interactions": ["what happens on click/drag/type"],
-  "acceptance": ["how dev knows the implementation matches the spec"]
+  "acceptance": ["how codezilla knows the implementation matches the spec"]
 }
 ```
 

@@ -27,8 +27,8 @@ flowchart TD
     M --> L{"you click it"}
     L -->|"change it"| M
     L -->|"lock it"| K["mock committed<br/>= the fidelity contract"]
-    K --> BR["build brief → dev"]
-    BR --> V["dev builds · verifies against the mock"]
+    K --> BR["build brief → codezilla"]
+    BR --> V["codezilla builds · verifies against the mock"]
 ```
 
 ---
@@ -89,7 +89,7 @@ On lock, the mock is committed to the repo (`docs/mocks/<slug>.html`) as the **f
 
 ## Stage 5 — The build brief
 
-What `dev` receives is deliberately concrete — files, components, variants, tokens, named explicitly:
+What `codezilla` receives is deliberately concrete — files, components, variants, tokens, named explicitly:
 
 ```
 ## Implementation brief — Settings
@@ -104,10 +104,10 @@ What `dev` receives is deliberately concrete — files, components, variants, to
 ### Acceptance               (3–6 checkable statements)
 ```
 
-Two rules travel with it. `dev` **must not re-add cut elements or drop moved ones** — that's what the disposition table is for. And green tests aren't enough: the screen gets loaded in the running app, in both color modes, and compared against the locked mock.
+Two rules travel with it. `codezilla` **must not re-add cut elements or drop moved ones** — that's what the disposition table is for. And green tests aren't enough: the screen gets loaded in the running app, in both color modes, and compared against the locked mock.
 
 ---
 
 ## When not to use this
 
-If the screen is trivial — one control, a copy tweak, a spacing nudge — say so and hand `dev` a one-paragraph brief. No mock, no reduction, no ceremony. The gate exists so the heavy path fires when it's earned, not on every visual change.
+If the screen is trivial — one control, a copy tweak, a spacing nudge — say so and hand `codezilla` a one-paragraph brief. No mock, no reduction, no ceremony. The gate exists so the heavy path fires when it's earned, not on every visual change.

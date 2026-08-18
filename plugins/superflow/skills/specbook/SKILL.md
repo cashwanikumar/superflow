@@ -27,15 +27,15 @@ This command is inspect-only except for writing inside `specbook/`.
 
 ## Lead behavior
 
-`pm` frames the run and owns every write — pm's description says it owns specs, and this is where that ownership lives. Three modes:
+`bossbaby` frames the run and owns every write — bossbaby's description says it owns specs, and this is where that ownership lives. Three modes:
 
 **Bootstrap / `--refresh`:**
 
 1. Confirm the repo root (quick `git status` + file tree).
 2. If `specbook/` already exists and `--refresh` was not passed, ask:
    > A specbook already exists. Refresh it? (yes / no / dry-run)
-3. Delegate the terrain map to `finder` with the brief below.
-4. From finder's capability list, derive **5–12 capability specs** — one per *user-meaningful capability* (auth, billing, search…), never one per file or module.
+3. Delegate the terrain map to `sherlock` with the brief below.
+4. From sherlock's capability list, derive **5–12 capability specs** — one per *user-meaningful capability* (auth, billing, search…), never one per file or module.
 5. Write `specbook/README.md`, `specbook/specs/<capability>.md` for each, and create empty `changes/` and `archive/` directories.
 6. Summarize: `<N> capability specs written, <M> open questions`.
 7. Tell the user the specbook is now in effect — the weave will read and write it from here on.
@@ -46,11 +46,11 @@ This command is inspect-only except for writing inside `specbook/`.
 
 ---
 
-## finder assignment (bootstrap/refresh only)
+## sherlock assignment (bootstrap/refresh only)
 
 ```text
-Owner: `finder`
-Objective: Map this repo's user-facing capabilities so pm can write baseline specs.
+Owner: `sherlock`
+Objective: Map this repo's user-facing capabilities so bossbaby can write baseline specs.
 Scope:
   - Entry points: routes, CLI commands, screens/pages, public APIs, jobs/schedulers
   - Tests as behavior evidence: what the suite asserts the system does
@@ -65,10 +65,10 @@ Validation: Read-only commands only (Glob, Grep, Read).
 
 ---
 
-## pm assignment (bootstrap/refresh)
+## bossbaby assignment (bootstrap/refresh)
 
 ```text
-Owner: `pm`
+Owner: `bossbaby`
 Objective: Write specbook/specs/<capability>.md for each confirmed capability.
 Constraints:
   - Behavior only, never implementation. A spec that names a framework is broken.
@@ -130,7 +130,7 @@ One paragraph: what this capability does, for whom.
 - ...
 ```
 
-### proposal.md — pm's spec, fold-back-ready
+### proposal.md — bossbaby's spec, fold-back-ready
 
 ```md
 # Proposal: <change title>
@@ -175,12 +175,12 @@ executing-plans / subagent-driven-development can consume this file unchanged.
 
 Once `specbook/` exists, the weave reads and writes it (the session-start hook injects the reminder; the `superflow` skill carries the detail):
 
-- **Understand** — finder reads the affected `specs/*.md` and scans `changes/` for overlapping in-flight work.
-- **Plan** — the lead opens the change folder; pm writes `proposal.md`; the technical design goes in `design.md`; the plan goes in `tasks.md`.
-- **Build** — dev reads `proposal.md` (the what) and works `tasks.md`; the rulebook stays the how.
+- **Understand** — sherlock reads the affected `specs/*.md` and scans `changes/` for overlapping in-flight work.
+- **Plan** — the lead opens the change folder; bossbaby writes `proposal.md`; the technical design goes in `design.md`; the plan goes in `tasks.md`.
+- **Build** — codezilla reads `proposal.md` (the what) and works `tasks.md`; the rulebook stays the how.
 - **Verify** — bughunter tests against the affected specs' Scenarios plus the proposal.
 - **Review** — the change folder path fills the code-review request's requirements slot.
-- **Finish** — pm folds the proposal's Spec deltas into `specs/` and moves the folder to `archive/` (the `--archive` behavior above).
+- **Finish** — bossbaby folds the proposal's Spec deltas into `specs/` and moves the folder to `archive/` (the `--archive` behavior above).
 
 The path-preference seam, stated once and verbatim: **once `specbook/` exists, the repo's preferred spec location is `specbook/changes/<change>/design.md` and its preferred plan location is `specbook/changes/<change>/tasks.md` — skills that default to `docs/superpowers/{specs,plans}` defer to these.**
 
@@ -189,7 +189,7 @@ The path-preference seam, stated once and verbatim: **once `specbook/` exists, t
 ## Rules
 
 - Opt-in only: never run because the directory is missing; headless runs never create it.
-- pm is read-only outside `specbook/`. auditor never writes inside it.
+- bossbaby is read-only outside `specbook/`. auditor never writes inside it.
 - Specs record behavior (*what*), never implementation (*how*).
 - `--archive` is the only way a change folder leaves `changes/`; fold-back before move, always.
 - `--refresh` preserves `<!-- human-edited -->` sections.

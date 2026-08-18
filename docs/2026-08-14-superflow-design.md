@@ -6,7 +6,7 @@ _Date: 2026-08-14 · Status: approved (design), pending implementation plan_
 
 `superflow` is a **new, self-contained Claude Code plugin** that combines two existing plugins into one portable "full-flow" development toolkit:
 
-- **agent-circus** (Marvin-internal): routed coding **personas** (finder, designer, dev, testers, bughunter, a11y-hunter, architect, auditor, pm) + a per-repo **rulebook** mechanism.
+- **agent-circus** (Marvin-internal): routed coding **personas** (sherlock, designer, codezilla, testers, bughunter, a11y-hunter, architect, auditor, bossbaby) + a per-repo **rulebook** mechanism.
 - **Superpowers** (obra, MIT): 14 harness-agnostic **process skills** (brainstorming, TDD, systematic-debugging, plans, code-review, verification, worktrees, etc.).
 
 The result is one plugin that can be dropped into **any** repository and provides a coherent pipeline: brainstorm → plan → build (TDD) → verify → review → finish, driven by specialist personas, with each project's conventions captured in its own generated rulebook.
@@ -44,7 +44,7 @@ superflow/                                      # git repo (= private marketplac
 └── plugins/superflow/
     ├── .claude-plugin/plugin.json              # name, version, author, keywords
     ├── agents/                                 # 10 generalized personas (forked from agent-circus)
-    │   ├── finder.md  pm.md  designer.md  dev.md
+    │   ├── sherlock.md  bossbaby.md  designer.md  codezilla.md
     │   ├── fe-unit-tester.md  be-unit-tester.md
     │   ├── bughunter.md  a11y-hunter.md  architect.md  auditor.md
     ├── commands/                               # 5 generalized (package-skills dropped)
@@ -81,9 +81,9 @@ _Note (2026-08): the `commands/` directory shown above has since merged into `sk
 
 Each persona keeps its **identity + workflow**. Substantive edits only where Marvin specifics leak:
 
-- **dev.md** — remove the "Load the matching skill" Marvin table (`marvin-ui-kit`, `@marvin/*`, DRF/celery). Replace with: "Before building, consult this repo's `CODEBASE_RULEBOOK.md` and conform; load `test-driven-development` for method and `systematic-debugging` for bugs. If a convention isn't in the rulebook, follow the surrounding code."
+- **codezilla.md** — remove the "Load the matching skill" Marvin table (`marvin-ui-kit`, `@marvin/*`, DRF/celery). Replace with: "Before building, consult this repo's `CODEBASE_RULEBOOK.md` and conform; load `test-driven-development` for method and `systematic-debugging` for bugs. If a convention isn't in the rulebook, follow the surrounding code."
 - **fe-unit-tester.md / be-unit-tester.md** — drop Marvin's exact stack (Vitest+RTL MockProvider / pytest fixtures). Replace with: "read the repo's existing test config + a sibling test, mirror it; load `test-driven-development` for method."
-- **finder / designer / bughunter / a11y-hunter / architect / pm** — strip incidental Marvin examples → generic phrasing or "per the rulebook." `a11y-hunter` keeps WCAG 2.0 AA.
+- **sherlock / designer / bughunter / a11y-hunter / architect / bossbaby** — strip incidental Marvin examples → generic phrasing or "per the rulebook." `a11y-hunter` keeps WCAG 2.0 AA.
 - **auditor** — unchanged in spirit; it **owns** generating `CODEBASE_RULEBOOK.md`, which is what makes the plugin portable.
 
 Interface for each persona: **input** = a scoped task prompt; **output** = its work product (map / spec / diff / findings / verdict); **depends on** = the repo's rulebook + the process skill it's told to load. Personas do not depend on each other's internals.
@@ -98,15 +98,15 @@ Interface for each persona: **input** = a scoped task prompt; **output** = its w
 
    | Stage | Superpowers skill | Persona |
    |---|---|---|
-   | Understand | brainstorming | finder |
-   | Plan | writing-plans | pm / architect |
+   | Understand | brainstorming | sherlock |
+   | Plan | writing-plans | bossbaby / architect |
    | Isolate | using-git-worktrees | — |
    | Design (UI) | — | designer |
-   | Build | test-driven-development | dev (consults rulebook) |
+   | Build | test-driven-development | codezilla (consults rulebook) |
    | Verify | verification-before-completion | fe/be-unit-tester, bughunter, a11y-hunter |
    | Review | requesting- / receiving-code-review | architect |
-   | Debug | systematic-debugging | finder → bughunter |
-   | Finish | finishing-a-development-branch | auditor (rulebook refresh) · pm (specbook fold-back, if a change folder is open) |
+   | Debug | systematic-debugging | sherlock → bughunter |
+   | Finish | finishing-a-development-branch | auditor (rulebook refresh) · bossbaby (specbook fold-back, if a change folder is open) |
 
 4. **Rulebook-first:** before any code change, consult `CODEBASE_RULEBOOK.md`; if missing, offer to run `/codebase-rulebook` first.
 5. **Minimum-spawn:** load only the skill the step touches; spawn only the personas the task needs. Skip stages that don't apply.
@@ -116,7 +116,7 @@ Interface for each persona: **input** = a scoped task prompt; **output** = its w
 - **codebase-rulebook** — scans the current repo → writes `CODEBASE_RULEBOOK.md` (the portability keystone). `--refresh` to update.
 - **specbook** _(added 2026-08, see §12)_ — bootstraps `specbook/`, the opt-in persistent spec layer. `--refresh` / `--change <slug>` / `--archive <slug>` / `--dry-run`.
 - **commit-prep** — summarize the diff + propose a commit message (doesn't commit unless asked).
-- **council** — multi-voice deliberation (architect, pm, dev, bughunter, finder) on a hard decision.
+- **council** — multi-voice deliberation (architect, bossbaby, codezilla, bughunter, sherlock) on a hard decision.
 - **daily-brief** — session start: where you left off + next action.
 - **handoff** — end-of-session handoff summary.
 - **Dropped:** `package-skills` (regenerated Marvin in-house package skills — not applicable generically).
@@ -135,7 +135,7 @@ Interface for each persona: **input** = a scoped task prompt; **output** = its w
 
 - **Vendored drift:** the 14 Superpowers skills won't auto-update. Mitigation: a documented "resync from upstream" step in the plugin README (copy from the installed Superpowers cache / the obra repo).
 - **`using-superpowers` vs `superflow` overlap:** resolved by making `superflow` the front door and having it *reference* `using-superpowers` rather than both competing as entry points.
-- **Persona generalization completeness:** all 10 persona files mention Marvin somewhere; the edit must catch incidental references, not just the dev skill-table. A grep gate (`marvin|@marvin|chakra|redux|drf|ui-kit`) over `agents/` should return clean before release.
+- **Persona generalization completeness:** all 10 persona files mention Marvin somewhere; the edit must catch incidental references, not just the codezilla skill-table. A grep gate (`marvin|@marvin|chakra|redux|drf|ui-kit`) over `agents/` should return clean before release.
 - **Genericness vs power:** without the Marvin skills, first-run value in a Marvin repo is lower until `/codebase-rulebook` has run. Mitigation: the flow prompts to generate the rulebook first.
 
 ## 11. Open questions (for implementation plan)
@@ -155,7 +155,7 @@ specbook/
   README.md                      # orientation stub; declares the path preferences
   specs/<capability>.md          # living per-capability requirements (R1, R2… with Given/When/Then scenarios)
   changes/YYYY-MM-DD-<slug>/     # one folder per in-flight change
-    proposal.md                  # pm: what & why + Spec deltas (fold-back-ready)
+    proposal.md                  # bossbaby: what & why + Spec deltas (fold-back-ready)
     design.md                    # technical design (brainstorming's output lands here)
     tasks.md                     # implementation plan (writing-plans' output lands here)
   archive/YYYY-MM-DD-<slug>/     # completed changes, moved after fold-back
@@ -165,5 +165,5 @@ Locked rules:
 
 - **Opt-in per repo** — spec awareness activates only when `specbook/` exists; superflow never creates it unprompted, and headless runs never mention it when absent.
 - **Vendored skills untouched** — the layer rides the "user preferences override spec/plan location" escape hatch in `brainstorming`/`writing-plans`, declared by the hook, the front-door skill, and the generated `specbook/README.md`.
-- **Ownership split** — `pm` owns every write inside `specbook/` (proposal at Plan, fold-back + archive at Finish); `auditor` still writes only `CODEBASE_RULEBOOK.md`.
-- **Minimum-spawn preserved** — a change folder opens only when the Plan stage runs (or `--change`); pm joins Finish only when a change folder is open.
+- **Ownership split** — `bossbaby` owns every write inside `specbook/` (proposal at Plan, fold-back + archive at Finish); `auditor` still writes only `CODEBASE_RULEBOOK.md`.
+- **Minimum-spawn preserved** — a change folder opens only when the Plan stage runs (or `--change`); bossbaby joins Finish only when a change folder is open.
