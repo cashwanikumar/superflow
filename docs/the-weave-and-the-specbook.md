@@ -2,7 +2,7 @@
 
 superflow turns non-trivial coding work into a staged pipeline of process skills and specialist personas. It can also keep a **specbook** — a durable spec layer in your repo, so requirements outlive the conversation. Here is how the pieces move, with worked examples.
 
-> Written against superflow 0.4. The weave and the specbook are unchanged in 0.5 — see the [README](../README.md) for what 0.5 added (deterministic workflows, the mock-locked design loop, handoff contracts).
+> Sections 1–5 were written against superflow 0.4 and are unchanged in 0.5. Section 6 covers the deterministic workflows 0.5 added. The design loop has its own page: [Designing a Screen](designing-a-screen.md).
 
 ---
 
@@ -144,6 +144,63 @@ flowchart LR
 | `/superflow:specbook --change <slug>` | open a change folder by hand (the Plan stage normally does this) |
 | `/superflow:specbook --archive <slug>` | fold Spec deltas into `specs/`, move the folder to `archive/` |
 | `/superflow:specbook --dry-run` | combinable with any form — show, don't write |
+
+---
+
+## 6. Deterministic workflows
+
+Two calls are expensive enough to be worth taking out of the model's hands and into a script. Both are opt-in; neither runs itself.
+
+The reason isn't speed — it's that a prose procedure fails **silently**. A council where one voice never got asked, or a review where one slice of the diff was quietly skipped, produces output that looks complete. A script can't skip a step and not show it.
+
+### `/superflow:council` — a decision, not a build
+
+For hard, expensive-to-reverse calls. The skill is the front door: it confirms the decision text (one sentence, passed verbatim to every voice) and the roster, then launches the `council-vote` workflow.
+
+```mermaid
+flowchart LR
+    S(["/superflow:council<br/>confirm decision + roster + spend"]) --> G["Ground · finder<br/>code excerpts (skipped if not code-tied)"]
+    G --> V["Voices — in parallel, independent"]
+    V --> A["architect · technical"]
+    V --> B["bughunter · failure modes"]
+    V --> C["dev · shippability"]
+    V --> D["pm · product value"]
+    V --> E["external CLIs<br/>only if you named them"]
+    A --> SY["Synthesize · architect<br/>tally · quote disagreements verbatim"]
+    B --> SY
+    C --> SY
+    D --> SY
+    E --> SY
+```
+
+Every vote returns through a JSON schema, so an abstain or a dead voice is **reported**, never missing from the tally. Abstains are never counted as votes and never discarded — an unparseable answer comes back carrying its raw text, because it can still contain signal. The final verdict is `architect`'s call, not a vote count; a verdict that diverges from the majority has to say why.
+
+External model CLIs can join as extra voices — they bill your own vendor accounts, so they're added only when you name them in that turn. See [Optional setup](../README.md#external-voices-for-the-council) for the config and the sanitization rules.
+
+### `/superflow:review-sweep` — an adversarial review of a big diff
+
+For epic gates and diffs larger than ~5 files. A run is expensive; small PRs get a plain `bughunter` pass instead.
+
+```mermaid
+flowchart LR
+    D(["diff vs base"]) --> P["Partition<br/>changed files + blast radius<br/>→ 2–6 coherent slices"]
+    P --> S1["bughunter · slice 1"]
+    P --> S2["bughunter · slice 2"]
+    P --> S3["bughunter · slice n"]
+    S1 --> DE["dedupe"]
+    S2 --> DE
+    S3 --> DE
+    DE --> VF["one skeptic per finding<br/>try hard to REFUTE it"]
+    VF --> CO["CONFIRMED<br/>traced end to end"]
+    VF --> PL["PLAUSIBLE<br/>undecidable from code alone"]
+    VF --> RF["refuted<br/>counted, not reported"]
+```
+
+Two design choices matter here. **Every changed file lands in a slice or is listed as left out with a reason** — silent partial coverage would read as "reviewed everything." And **PLAUSIBLE findings are never dropped for want of a reproduction**: integration-seam bugs (caller/callee drift, schema drift, lifecycle races) are precisely the ones nobody can reproduce on demand, and precisely the expensive ones.
+
+After fixing findings, re-run scoped to the touched files rather than sweeping the whole diff again.
+
+> Workflows need Dynamic workflows enabled (Claude Code 2.1.154+; on Pro, toggle it in `/config`). If they're unavailable, superflow says so and falls back to the conversational equivalent rather than pretending the run happened.
 
 ---
 
