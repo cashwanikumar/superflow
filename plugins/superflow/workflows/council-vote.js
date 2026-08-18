@@ -3,7 +3,7 @@ export const meta = {
   description: 'Multi-voice council for expensive-to-reverse decisions — independent schema-forced votes, no vote ever silently dropped',
   whenToUse: 'Launched by the `superflow:council` skill AFTER the human confirmed the decision text, the voice roster, and any external spend. Do not launch directly — the skill owns cost confirmation.',
   phases: [
-    { title: 'Ground', detail: 'finder gathers code excerpts (skipped when not code-tied)' },
+    { title: 'Ground', detail: 'sherlock gathers code excerpts (skipped when not code-tied)' },
     { title: 'Voices', detail: 'personas + confirmed external CLIs vote independently, in parallel' },
     { title: 'Synthesize', detail: 'architect tallies, quotes disagreements verbatim, recommends' },
   ],
@@ -11,11 +11,11 @@ export const meta = {
 
 // args = {
 //   decision:  string (required) — the restated decision under review
-//   code_tied: boolean (default true) — spawn finder for code excerpts first
+//   code_tied: boolean (default true) — spawn sherlock for code excerpts first
 //   providers: array of 'codex' | 'gemini' | 'claude' — external voices the user
 //              EXPLICITLY confirmed in the /council wrapper. Empty/omitted = persona-only.
 //              The wrapper owns cost confirmation; this script never adds a provider.
-//   hints:     optional array of file paths finder should start from
+//   hints:     optional array of file paths sherlock should start from
 // }
 //
 // Contract with the `superflow:council` skill (the wrapper):
@@ -72,9 +72,9 @@ Gather the code context the council voices need to judge this decision well. ${h
 Read-only — inspect, never modify. Use graphify for structure lookups if available (fall back to glob/grep silently; never block on it). Skip nested worktree copies of this repo and vendored/generated trees.
 Keep excerpts SHARP: only lines that change the decision, 200 lines total max, each block headed by its path:line.
 NEVER excerpt secret material — no .env* contents, keys/tokens/passwords, PEM blocks, or connection strings carrying credentials; if such a line is load-bearing, replace the value with [redacted].`,
-    { agentType: 'superflow:finder', label: 'ground:finder', phase: 'Ground', schema: GROUND })
+    { agentType: 'superflow:sherlock', label: 'ground:sherlock', phase: 'Ground', schema: GROUND })
 } else {
-  log('Not code-tied — skipping finder grounding')
+  log('Not code-tied — skipping sherlock grounding')
 }
 
 const excerpts = ground ? `\n\nInvestigator summary: ${ground.summary}\n\nRelevant code excerpts (gathered by a read-only investigator):\n${ground.excerpts}` : ''
@@ -135,11 +135,11 @@ const voices = await parallel([
     { agentType: 'superflow:bughunter', label: 'voice:bughunter', phase: 'Voices', schema: VOTE })
     .then((v) => v && { voice: 'bughunter (failure modes)', ...v }),
   () => agent(votePrompt('Implementation Guide — shippability: concrete implementation steps, scope check (too small / right-sized / overbuilt), complexity hotspots, honest time-to-ship. Inspect only.'),
-    { agentType: 'superflow:dev', label: 'voice:implementation-guide', phase: 'Voices', schema: VOTE })
+    { agentType: 'superflow:codezilla', label: 'voice:implementation-guide', phase: 'Voices', schema: VOTE })
     .then((v) => v && { voice: 'Implementation Guide', ...v }),
   () => agent(votePrompt('Product — user value, scope, and what this decision costs the people who use the thing. Is the problem worth solving at all, and is this the smallest thing that solves it? Inspect only.'),
-    { agentType: 'superflow:pm', label: 'voice:pm', phase: 'Voices', schema: VOTE })
-    .then((v) => v && { voice: 'pm (product value)', ...v }),
+    { agentType: 'superflow:bossbaby', label: 'voice:bossbaby', phase: 'Voices', schema: VOTE })
+    .then((v) => v && { voice: 'bossbaby (product value)', ...v }),
   ...providers.map((p) => () => externalVoice(p)),
 ])
 

@@ -53,8 +53,8 @@ Routing decision for each user turn:
 - Message begins with "/" → it's a slash command; run it and skip the opt-in.
 - Trivial (single-line explanation, file read, lookup, "what does X do") → answer directly; no opt-in, no delegation.
 - Otherwise (non-trivial, no slash command) → BEFORE doing any work, apply the full-flow policy below.
-  The weave: superflow:finder (map) → superflow:pm / superflow:architect (plan) → superflow:designer (UI spec) → superflow:dev (build, TDD) → superflow:fe-unit-tester / superflow:be-unit-tester + superflow:bughunter + superflow:a11y-hunter (verify) → superflow:architect (review). Skip whatever doesn't apply.
-  ALWAYS dispatch personas and skills with the superflow: prefix — subagent_type "superflow:dev", never bare "dev". A bare name either fails to resolve or silently hits a same-named agent in the user's own ~/.claude/agents/, which has never seen this protocol.
+  The weave: superflow:sherlock (map) → superflow:bossbaby / superflow:architect (plan) → superflow:designer (UI spec) → superflow:codezilla (build, TDD) → superflow:fe-unit-tester / superflow:be-unit-tester + superflow:bughunter + superflow:a11y-hunter (verify) → superflow:architect (review). Skip whatever doesn't apply.
+  ALWAYS dispatch personas and skills with the superflow: prefix — subagent_type "superflow:codezilla", never bare "codezilla". A bare name either fails to resolve or silently hits a same-named agent in the user's own ~/.claude/agents/, which has never seen this protocol.
 
 __POLICY__
 

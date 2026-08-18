@@ -23,10 +23,10 @@ Two commands to install, one to teach it my repo, one to opt into the spec layer
   Future code changes will consult it.
 
 ❯ /superflow:specbook
-  pm leads. finder is mapping capabilities…
-  finder: 7 candidates — invoices, clients, payments, reminders,
+  bossbaby leads. sherlock is mapping capabilities…
+  sherlock: 7 candidates — invoices, clients, payments, reminders,
           auth, exports, webhooks (each with file:line evidence)
-  pm: writing baseline specs. Unverified behavior goes under
+  bossbaby: writing baseline specs. Unverified behavior goes under
       Open questions, marked "Baseline — derived from code, verify".
   7 capability specs written, 4 open questions → specbook/
 ```
@@ -68,24 +68,24 @@ The real ask. This is where superflow asks its one question.
 
 ```
 ❯ add recurring invoices — monthly and quarterly
-  Run the full superflow for this? It would: finder maps invoicing +
-  jobs, pm/architect write the change folder, dev builds test-first in
+  Run the full superflow for this? It would: sherlock maps invoicing +
+  jobs, bossbaby/architect write the change folder, codezilla builds test-first in
   a worktree, QA verifies against the spec deltas, architect reviews,
-  pm folds the spec back at finish. (yes / no)
+  bossbaby folds the spec back at finish. (yes / no)
 ❯ yes
 ```
 
-**Understand.** finder reads the terrain — including the spec layer — before anyone plans anything.
+**Understand.** sherlock reads the terrain — including the spec layer — before anyone plans anything.
 
 ```
-  finder: specbook/specs/invoices.md has 5 requirements; R3 (rounding)
+  sherlock: specbook/specs/invoices.md has 5 requirements; R3 (rounding)
   and R5 (numbering is gapless) constrain generation. exports.md
   declares "Depends on: invoices" — CSV export will see new rows.
   specbook/changes/ is empty: no overlapping work in flight.
   Jobs run through src/jobs/scheduler.ts (node-cron, daily 06:00).
 ```
 
-**Plan.** The lead opens `specbook/changes/2026-08-16-recurring-invoices/`. pm writes the proposal; architect settles the design; the task list lands as checkboxes. Three files exist before a single line of code does.
+**Plan.** The lead opens `specbook/changes/2026-08-16-recurring-invoices/`. bossbaby writes the proposal; architect settles the design; the task list lands as checkboxes. Three files exist before a single line of code does.
 
 **`specbook/changes/2026-08-16-recurring-invoices/proposal.md`**
 
@@ -137,7 +137,7 @@ consumes this file unchanged.
 - [ ] Step 2: failing test — re-run creates no duplicate (R7)
 ```
 
-**Isolate → Build.** A worktree at `.worktrees/recurring-invoices`, then dev works `tasks.md` top to bottom, test-first — the rulebook supplies the *how* (Vitest, migration naming, service-layer rule), the proposal supplies the *what*.
+**Isolate → Build.** A worktree at `.worktrees/recurring-invoices`, then codezilla works `tasks.md` top to bottom, test-first — the rulebook supplies the *how* (Vitest, migration naming, service-layer rule), the proposal supplies the *what*.
 
 **Verify** · 11:20 — bughunter doesn't guess what to test. The scenarios are sitting in the deltas.
 
@@ -148,7 +148,7 @@ consumes this file unchanged.
      retry): no second draft. Actual: duplicate.
   2. LOW — generated drafts skip the default reminder, against the
      proposed CHANGES to reminders.md R2. Flagged against the delta.
-  dev: fixed #1 with an idempotency key on (invoice_id, period);
+  codezilla: fixed #1 with an idempotency key on (invoice_id, period);
   fixed #2; both regression tests added. Suite green.
 ```
 
@@ -158,7 +158,7 @@ consumes this file unchanged.
   Tests green. Merge to main locally / push + PR / keep as-is?
 ❯ merge locally
   Merged. Worktree removed.
-  pm: folding Spec deltas → specs/invoices.md, specs/reminders.md
+  bossbaby: folding Spec deltas → specs/invoices.md, specs/reminders.md
       moving change folder → specbook/archive/
   auditor: rulebook refresh — added "background jobs carry
       idempotency keys" to Custom conventions.

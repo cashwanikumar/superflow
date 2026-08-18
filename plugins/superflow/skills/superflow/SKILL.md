@@ -5,7 +5,7 @@ description: The front door for non-trivial coding work in this repo — pairs a
 
 # superflow — the full-flow front door
 
-superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) and **specialist personas** (finder, pm, designer, dev, testers, bughunter, a11y-hunter, architect, auditor). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
+superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) and **specialist personas** (sherlock, bossbaby, designer, codezilla, testers, bughunter, a11y-hunter, architect, auditor). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
 
 ## 1. Skill-check (always-on, lightweight)
 
@@ -58,19 +58,19 @@ You know which mode you're in; the hook does not. It cannot: the SessionStart pa
 
 Skip any stage that doesn't apply.
 
-**Always dispatch with the `superflow:` prefix** — pass `superflow:dev` as the `subagent_type`, never bare `dev`. Bare names are not superflow's: they either fail to resolve, or silently hit a same-named agent in the user's own `~/.claude/agents/`, which is a different persona that has never seen this protocol. (Observed in testing: a weave that named personas bare ran four of the user's agents and only one of superflow's.) The same applies to skills — `superflow:test-driven-development`, not `test-driven-development`.
+**Always dispatch with the `superflow:` prefix** — pass `superflow:codezilla` as the `subagent_type`, never bare `codezilla`. Bare names are not superflow's: they either fail to resolve, or silently hit a same-named agent in the user's own `~/.claude/agents/`, which is a different persona that has never seen this protocol. (Observed in testing: a weave that named personas bare ran four of the user's agents and only one of superflow's.) The same applies to skills — `superflow:test-driven-development`, not `test-driven-development`.
 
 | Stage | Superpowers skill | Persona |
 |---|---|---|
-| Understand | `superflow:brainstorming` | `superflow:finder` |
-| Plan | `superflow:writing-plans` | `superflow:pm` / `superflow:architect` |
+| Understand | `superflow:brainstorming` | `superflow:sherlock` |
+| Plan | `superflow:writing-plans` | `superflow:bossbaby` / `superflow:architect` |
 | Isolate | `superflow:using-git-worktrees` | — |
 | Design (UI) | `superflow:design` (mock-locked) · `superflow:ui-reduction` (declutter) | `superflow:designer` |
-| Build | `superflow:test-driven-development` | `superflow:dev` (consults rulebook) |
+| Build | `superflow:test-driven-development` | `superflow:codezilla` (consults rulebook) |
 | Verify | `superflow:verification-before-completion` | `superflow:fe-unit-tester` / `superflow:be-unit-tester`, `superflow:bughunter`, `superflow:a11y-hunter` |
 | Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` · `/superflow:review-sweep` for big diffs | `superflow:architect` |
-| Debug | `superflow:systematic-debugging` | `superflow:finder` → `superflow:bughunter` |
-| Finish | `superflow:finishing-a-development-branch` | `superflow:auditor` (rulebook refresh) · `superflow:pm` (specbook fold-back, if a change folder is open) |
+| Debug | `superflow:systematic-debugging` | `superflow:sherlock` → `superflow:bughunter` |
+| Finish | `superflow:finishing-a-development-branch` | `superflow:auditor` (rulebook refresh) · `superflow:bossbaby` (specbook fold-back, if a change folder is open) |
 
 With `specbook/` present (§5), Understand reads it, Plan writes the change folder, and Finish folds it back.
 
@@ -100,9 +100,9 @@ If `specbook/` exists at the repo root, this repo keeps a persistent spec layer 
 When present:
 
 - `specbook/specs/<capability>.md` are the living requirements. Read the affected ones at Understand; verify against their Scenarios at Verify; pass the change folder as the requirements input at Review.
-- Every change that runs the Plan stage gets `specbook/changes/YYYY-MM-DD-<slug>/`, opened by the lead. `pm` writes `proposal.md`; the technical design goes in `design.md` — **this is the repo's preferred spec location, which the `brainstorming` skill defers to** — and the plan goes in `tasks.md` — **the preferred plan location, which `writing-plans` defers to**. Include the change-folder path in every persona brief; a spawned subagent has not seen this section.
+- Every change that runs the Plan stage gets `specbook/changes/YYYY-MM-DD-<slug>/`, opened by the lead. `bossbaby` writes `proposal.md`; the technical design goes in `design.md` — **this is the repo's preferred spec location, which the `brainstorming` skill defers to** — and the plan goes in `tasks.md` — **the preferred plan location, which `writing-plans` defers to**. Include the change-folder path in every persona brief; a spawned subagent has not seen this section.
 - Work that skips Plan opens no folder. If direct work alters behavior a living spec covers, update that spec in the same change — headless, state the drift in your final message instead of stalling.
-- At Finish, `pm` folds the proposal's Spec deltas into `specs/` and moves the folder to `archive/` (`/superflow:specbook --archive`). auditor writes only `CODEBASE_RULEBOOK.md`; pm writes only inside `specbook/`.
+- At Finish, `bossbaby` folds the proposal's Spec deltas into `specs/` and moves the folder to `archive/` (`/superflow:specbook --archive`). auditor writes only `CODEBASE_RULEBOOK.md`; bossbaby writes only inside `specbook/`.
 - The rulebook says **how** this codebase does things; the specbook says **what** it must do.
 
 ## 6. Minimum-spawn
@@ -116,10 +116,10 @@ When present:
 | Persona | Role |
 |---|---|
 | `architect` | Scalability, boundaries, tradeoffs. Plans & reviews; not the default builder. |
-| `pm` | What to build & why — specs, scope, success metrics. |
-| `finder` | Read-only investigator; maps the terrain before others act. |
+| `bossbaby` | What to build & why — specs, scope, success metrics. |
+| `sherlock` | Read-only investigator; maps the terrain before others act. |
 | `designer` | UX/UI spec before code (read-only). |
-| `dev` | Implementer; tight code, consults the rulebook. |
+| `codezilla` | Implementer; tight code, consults the rulebook. |
 | `fe-unit-tester` | Frontend unit tests, mirroring the repo's setup. |
 | `be-unit-tester` | Backend unit tests, mirroring the repo's setup. |
 | `bughunter` | Functional QA + convention/security red flags. |
@@ -130,11 +130,11 @@ When present:
 
 - `/superflow:codebase-rulebook` — scan the repo → write `CODEBASE_RULEBOOK.md` (the portability keystone). `--refresh` to update.
 - `/superflow:specbook` — bootstrap `specbook/` (living capability specs + per-change proposal/design/tasks). Opt-in per repo. `--refresh` / `--change <slug>` / `--archive <slug>` / `--dry-run`.
-- `/superflow:council` — multi-voice deliberation (architect, pm, dev, bughunter, finder) on a hard decision; architect synthesizes.
+- `/superflow:council` — multi-voice deliberation (architect, bossbaby, codezilla, bughunter, sherlock) on a hard decision; architect synthesizes.
 - `/superflow:daily-brief` — fast session start: where you left off + the next action.
 - `/superflow:handoff` — end-of-session handoff summary (what changed, state, pending, next steps).
 - `/superflow:commit-prep` — summarize the diff + propose a commit message (doesn't commit unless asked). Optionally hard-gated: set `SUPERFLOW_COMMIT_GATE=1` (or `{"commitGate": true}` in `.claude/superflow.json`) and a bare `git commit` is blocked until it goes through this skill. Off by default.
-- `/superflow:design` — screen → design spec → **interactive mock the user locks** → build brief for `dev`. Specs propose; mocks decide.
+- `/superflow:design` — screen → design spec → **interactive mock the user locks** → build brief for `codezilla`. Specs propose; mocks decide.
 - `/superflow:review-sweep` — adversarial review sweep over a large diff (workflow; expensive — epic gates only).
 
 Loaded on demand, not addressed as commands: `superflow:ui-reduction` (the declutter method, fired by designer's gate) and `superflow:handoff-contracts` (JSON handoff schemas for the weave).
