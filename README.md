@@ -1,8 +1,6 @@
 # superflow
 
-superflow is a portable, self-contained Claude Code plugin that turns non-trivial coding work into a coherent pipeline — brainstorm → plan → build (TDD) → verify → review → finish — driven by specialist personas and disciplined by battle-tested process skills. It drops into **any** repository and adapts to that repo's conventions through a self-scanning `CODEBASE_RULEBOOK.md`, so it isn't tied to any particular stack.
-
-> **Built on [Superpowers](https://github.com/obra/superpowers)** by [Jesse Vincent (obra)](https://github.com/obra), MIT-licensed. The process discipline in superflow — TDD, brainstorming, systematic debugging, plan writing, code review, verification, git worktrees — is Superpowers' work, vendored here verbatim with its license intact. superflow adds the persona layer, the rulebook, the specbook, and the routing that decides which of them runs. If you want the process skills on their own, install Superpowers directly. Full provenance: [ATTRIBUTION.md](ATTRIBUTION.md).
+superflow is a portable, self-contained Claude Code plugin that turns non-trivial coding work into a coherent pipeline — brainstorm → plan → build (TDD) → verify → review → finish — driven by specialist personas and disciplined by the battle-tested process skills of [Superpowers](https://github.com/obra/superpowers). It drops into **any** repository and adapts to that repo's conventions through a self-scanning `CODEBASE_RULEBOOK.md`, so it isn't tied to any particular stack.
 
 ## How it works
 
@@ -234,8 +232,12 @@ One thing `SUPERFLOW_FLOW` never touches: the specbook. Bootstrapping `specbook/
 
 ## Resync Superpowers skills from upstream
 
-The 14 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, and `handoff/`, which are ours) are copied verbatim from Superpowers and do **not** auto-update. To resync from upstream, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, keeping each skill's files intact. The `superflow/` skill is ours — don't overwrite it.
+The 14 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, `ui-reduction/`, and `handoff-contracts/`, which are ours) are copied verbatim from Superpowers and do **not** auto-update. To resync from upstream, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, keeping each skill's files intact. The `superflow/` skill is ours — don't overwrite it.
 
 ## Credits
 
-Process skills are vendored from Superpowers (Jesse Vincent / obra, MIT). The personas and the codebase-rulebook mechanism are a generalized fork of an internal agent-circus plugin. See [ATTRIBUTION.md](ATTRIBUTION.md).
+**Built on [Superpowers](https://github.com/obra/superpowers)** by [Jesse Vincent (obra)](https://github.com/obra), MIT-licensed. The process discipline in superflow — TDD, brainstorming, systematic debugging, plan writing, code review, verification, git worktrees — is Superpowers' work, vendored here verbatim with its license intact. If you want the process skills on their own, install Superpowers directly.
+
+superflow adds the persona layer, the rulebook, the specbook, the design and handoff contracts, the deterministic workflows, and the routing that decides which of them runs. The personas and the codebase-rulebook mechanism are a generalized fork of an internal agent-circus plugin. The `ui-reduction` skill's quick-diagnostic and severity-rating patterns are adapted from the MIT-licensed wondelai/skills `ux-heuristics` skill.
+
+Full provenance: [ATTRIBUTION.md](ATTRIBUTION.md).
