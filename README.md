@@ -4,10 +4,7 @@ superflow is a portable, self-contained Claude Code plugin that turns non-trivia
 
 ## How it works
 
-> A visual walkthrough (interactive): **https://claude.ai/code/artifact/037be08d-120b-4026-aee4-513a8de6c773**
-> Flowchart explainer, specbook included: **https://claude.ai/code/artifact/4419409a-3be8-407a-85bc-4ac697c44156**
-> A session diary — one feature end to end: **https://claude.ai/code/artifact/c7fb4f0a-e98a-494d-b63c-1af06eaef45f**
-> _(private artifacts — open the share menu on a page to let others view it.)_
+> **More detail:** [The Weave & the Specbook](docs/the-weave-and-the-specbook.md) — the full pipeline and spec layer, diagrammed · [A Feature, Woven](docs/a-feature-woven.md) — one feature end to end, as a session diary.
 
 superflow has **two tiers**. A cheap check runs on every turn and never spawns agents; the expensive half — the full process skills *and* the persona team — sits behind a single opt-in gate. So a quick question stays quick, and neither ingredient is invoked wholesale on work that doesn't need it.
 
