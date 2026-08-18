@@ -49,7 +49,7 @@ flowchart TD
     G -->|"yes"| U["Understand · finder"]
     U --> P["Plan · pm + architect"]
     P --> I["Isolate · git worktree"]
-    I --> DE["Design · designer"]
+    I --> DE["Design · designer<br/>spec → mock → <b>you lock it</b>"]
     DE --> BU["Build · dev · TDD"]
     BU --> V["Verify · QA + a11y"]
     V --> RE["Review · architect"]
