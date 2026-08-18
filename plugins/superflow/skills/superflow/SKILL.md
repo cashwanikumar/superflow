@@ -65,14 +65,29 @@ Skip any stage that doesn't apply.
 | Understand | `superflow:brainstorming` | `superflow:finder` |
 | Plan | `superflow:writing-plans` | `superflow:pm` / `superflow:architect` |
 | Isolate | `superflow:using-git-worktrees` | — |
-| Design (UI) | — | `superflow:designer` |
+| Design (UI) | `superflow:design` (mock-locked) · `superflow:ui-reduction` (declutter) | `superflow:designer` |
 | Build | `superflow:test-driven-development` | `superflow:dev` (consults rulebook) |
 | Verify | `superflow:verification-before-completion` | `superflow:fe-unit-tester` / `superflow:be-unit-tester`, `superflow:bughunter`, `superflow:a11y-hunter` |
-| Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` | `superflow:architect` |
+| Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` · `/superflow:review-sweep` for big diffs | `superflow:architect` |
 | Debug | `superflow:systematic-debugging` | `superflow:finder` → `superflow:bughunter` |
 | Finish | `superflow:finishing-a-development-branch` | `superflow:auditor` (rulebook refresh) · `superflow:pm` (specbook fold-back, if a change folder is open) |
 
 With `specbook/` present (§5), Understand reads it, Plan writes the change folder, and Finish folds it back.
+
+### Handoffs between stages
+
+The weave relays through prose by default, and prose handoffs are lossy in a way nothing errors on — the caveat in paragraph 4 doesn't survive, and the next persona builds the wrong thing. For any weave with two or more handoffs, load **`superflow:handoff-contracts`** and require the fenced JSON block on each spawn. A malformed handoff then fails loudly instead of degrading silently.
+
+### Deterministic workflows (the expensive calls)
+
+Two decisions are costly enough to be worth taking out of the model's hands and into a script, where a dropped voice or a skipped slice is impossible rather than unlikely:
+
+| Command | What it does | When |
+|---|---|---|
+| `/superflow:council` | Confirms the decision + roster + external spend, then runs the `council-vote` workflow: schema-forced independent votes, architect synthesizes. | Hard, expensive-to-reverse calls. |
+| `/superflow:review-sweep` | Partitions the diff into coherent slices, one `bughunter` per slice, then one skeptic per finding → CONFIRMED / PLAUSIBLE tiers. | Epic gates and diffs >~5 files ONLY — a run is expensive. Small PRs get a plain `bughunter` pass. |
+
+Both are opt-in and neither runs itself. If Dynamic workflows are unavailable in the user's session, say so and fall back to the conversational equivalent (the `council` skill's roster run by hand; a plain `bughunter` review) rather than pretending the run happened.
 
 ## 4. Rulebook-first
 
@@ -118,4 +133,8 @@ When present:
 - `/superflow:council` — multi-voice deliberation (architect, pm, dev, bughunter, finder) on a hard decision; architect synthesizes.
 - `/superflow:daily-brief` — fast session start: where you left off + the next action.
 - `/superflow:handoff` — end-of-session handoff summary (what changed, state, pending, next steps).
-- `/superflow:commit-prep` — summarize the diff + propose a commit message (doesn't commit unless asked).
+- `/superflow:commit-prep` — summarize the diff + propose a commit message (doesn't commit unless asked). Optionally hard-gated: set `SUPERFLOW_COMMIT_GATE=1` (or `{"commitGate": true}` in `.claude/superflow.json`) and a bare `git commit` is blocked until it goes through this skill. Off by default.
+- `/superflow:design` — screen → design spec → **interactive mock the user locks** → build brief for `dev`. Specs propose; mocks decide.
+- `/superflow:review-sweep` — adversarial review sweep over a large diff (workflow; expensive — epic gates only).
+
+Loaded on demand, not addressed as commands: `superflow:ui-reduction` (the declutter method, fired by designer's gate) and `superflow:handoff-contracts` (JSON handoff schemas for the weave).

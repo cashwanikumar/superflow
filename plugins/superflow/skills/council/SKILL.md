@@ -1,13 +1,15 @@
 ---
 name: council
-description: Multi-voice deliberation on a hard, expensive-to-reverse architectural or product decision — each core persona weighs in independently and architect synthesizes. Use when the user runs /superflow:council or explicitly asks for a full council on a decision.
+description: Multi-voice deliberation on a hard, expensive-to-reverse architectural or product decision — independent schema-forced votes from each persona (plus optional external model CLIs), synthesized by architect. Use when the user runs /superflow:council or explicitly asks for a full council on a decision.
 ---
 
 # Council
 
-Full multi-voice deliberation on a hard architectural or product decision. Each of the core personas weighs in independently; `architect` synthesizes everything into a single recommendation.
+Full multi-voice deliberation on a hard architectural or product decision. Each voice weighs in **independently**, then `architect` synthesizes.
 
-Use this for genuinely hard, expensive-to-reverse calls. For a quick gut-check, just ask `architect` or `bughunter` directly.
+Use this for genuinely hard, expensive-to-reverse calls. For a quick gut-check, just ask `superflow:architect` or `superflow:bughunter` directly — a council run is not cheap.
+
+This skill is the **front door**. The deliberation itself runs as a deterministic workflow, `council-vote`, so no voice can be silently dropped: every vote comes back through a JSON schema, and a voice that dies or abstains is reported rather than quietly missing from the tally. This skill's job is everything the script must not decide for you — what the decision actually is, who votes, and whether you're spending money outside Anthropic.
 
 ---
 
@@ -19,57 +21,58 @@ Use this for genuinely hard, expensive-to-reverse calls. For a quick gut-check, 
 /superflow:council pick a state library for the dashboard
 ```
 
-If the decision isn't clear, `architect` asks: *"What's the decision you want the council to weigh in on?"*
-
 ---
 
 ## Lead behavior
 
-`architect` chairs the council. Steps:
+### 1. Confirm the decision text
 
-1. Restate the decision in one sentence so the user can confirm intent.
-2. (Optional) Spawn `finder` to gather relevant code excerpts if the decision is code-tied.
-3. Run the voices in parallel, each from its own lens:
-   - `architect` — boundaries, failure modes, evolution, build-vs-buy
-   - `pm` — user value, scope, what we're *not* doing
-   - `dev` — implementation cost, simplicity, what bites later
-   - `bughunter` — how it breaks, edge cases, migration risk
-   - `finder` — what the current code/usage actually constrains
-4. Synthesize all voices **with attribution** — quote who said what, especially on disagreements.
-5. End with one clear recommendation.
+Restate the decision in **one sentence** and get the user to confirm it. This sentence is passed verbatim to every voice — a vague decision produces five vague votes, and you will have paid for all of them.
 
-(Personas are makers/specialists; `designer`, the testers, and `auditor` aren't on the council unless the decision is specifically in their lane.)
+If the decision isn't clear, ask: *"What's the decision you want the council to weigh in on?"*
 
----
+### 2. Confirm the roster and any external spend
 
-## Synthesis format
+The default roster is persona-only and costs nothing beyond this session: `architect` (technical), `bughunter` (failure modes), `dev` (shippability), `pm` (product value), plus `finder` grounding when the decision is code-tied.
 
-```md
-## Council — <decision in one line>
+External model CLIs (`codex`, `gemini`, `claude`) can be added as extra voices — **but only ones the user explicitly names in this turn.** These call third-party CLIs installed on the user's machine and may bill the user's own vendor accounts. Never add one on your own initiative, and never carry a provider over from an earlier council. If the user asks for external voices, confirm the spend before launching.
 
-### Voices
-- architect: <one-line verdict>
-- pm: …
-- dev: …
-- bughunter: …
-- finder: …
+External voices read their command + model from `.claude/superflow.json` (repo-local) or `~/.claude/superflow.json`:
 
-### Where they agree
-### Where they disagree   ← the interesting part; don't average it away
-### Top 3 risks
-### Strongest alternative
-### Recommendation
-- Verdict: proceed / proceed with changes / rethink
-- Why:
-- If proceeding, change first:
-- What would change the verdict:
+```json
+{ "providers": { "codex": { "command": "codex", "model": "..." } } }
 ```
+
+### 3. Launch the workflow
+
+Only after both confirmations, launch `council-vote` via the **Workflow** tool:
+
+```
+Workflow({
+  name: "council-vote",
+  args: {
+    decision:  "<the confirmed one-sentence decision>",
+    code_tied: true,                    // false for pure product/process calls — skips finder
+    providers: [],                      // ONLY user-confirmed external CLIs
+    hints:     ["path/to/relevant.ts"]  // optional starting points for finder
+  }
+})
+```
+
+The workflow returns `{ synthesis, votes }`.
+
+### 4. Report
+
+Render `synthesis` **verbatim** — it is already in the council format, and re-summarizing it is exactly how a disagreement gets averaged away. You may additionally show the `votes` table. If the run reports voices that failed to return, say so plainly.
 
 ---
 
 ## Rules
 
 - Inspect and deliberate only. Never edit files during a council.
+- The decision text and the external-spend approval are **the human's**, confirmed before launch. The script never adds a provider on its own.
 - Highlight disagreements — don't smooth them over. A 3-2 split is a finding; say so.
-- The final verdict is `architect`'s call, not a vote — explain it if it diverges from the majority.
+- Abstains are reported, never counted as votes, and never dropped — an abstain's raw output can still carry signal.
+- The final verdict is `architect`'s call, not a vote count — explain it if it diverges from the majority.
 - If the decision is trivial (formatting, rename, tiny refactor), say so and skip the ceremony.
+- **Headless runs:** if external providers were not pre-specified in the invocation, run persona-only rather than stalling on a confirmation nobody can give, and say so in the final message.

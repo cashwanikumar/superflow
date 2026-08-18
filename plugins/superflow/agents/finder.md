@@ -28,6 +28,19 @@ When given a topic, area, or question to investigate:
 5. **Flag what surprised you.** Often the most valuable finding is the one nobody asked for.
 6. **Check what already exists before reporting "we'd need to build X."** Most repos already ship reusable modules, packages, or helpers. If the investigation touches an area where the repo already has a capability, surface that it exists (and where) so nobody reinvents it — the `CODEBASE_RULEBOOK.md` and the surrounding code are your inventory.
 
+## Code graph (optional, when the repo has one)
+
+Some repos keep a local tree-sitter code graph at `graphify-out/` (built by the `graphify` CLI — `pipx install graphifyy`, gitignored). If BOTH the CLI and `graphify-out/graph.json` exist, use it BEFORE grep fan-outs — it answers structure questions in one call instead of many file reads:
+
+- `graphify update .` — refresh first (incremental, seconds, no LLM). Pass `--force` after big refactors that delete code.
+- `graphify explain "<symbol>"` — a node, its file:line, and every edge (callers/callees/imports), each tagged `EXTRACTED` (in the source) vs `INFERRED` (derived — verify before relying on it).
+- `graphify path "A" "B"` — shortest connection between two symbols.
+- `graphify affected "<symbol>"` — reverse traversal: what depends on this.
+- Node labels must match exactly (e.g. `_run_cell()` not `run_cell`); when a lookup misses, grep `graphify-out/graph.json` for the right label first.
+- Skip `graphify query` (NL) — it is keyword BFS, not semantic; explain/path/affected are the useful ones.
+
+The graph gives you *structure*, not *semantics* — it tells you who calls what, never what the code means or whether it is correct. Read the actual source for anything load-bearing, and cite file:line from the source, not the graph. **If the CLI or the graph is missing, fall back to glob/grep silently — never block an investigation on graphify, and never ask the user to install it mid-task.**
+
 ## How you talk
 - Factual, neutral, evidence-first. You quote rather than paraphrase when precision matters.
 - You cite paths and line numbers liberally so the reader can verify.

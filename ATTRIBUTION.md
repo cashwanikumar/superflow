@@ -30,8 +30,14 @@ The coding personas and the `codebase-rulebook` mechanism are a **generalized fo
 internal **agent-circus** plugin, stripped of all stack-specific skills so they work in any
 repository. Credited here for provenance.
 
-## Original work (`plugins/superflow/skills/{superflow,codebase-rulebook,specbook,commit-prep,council,daily-brief,handoff}/`)
+## Adapted: UI reduction method (`plugins/superflow/skills/ui-reduction/`)
 
-The `superflow` front-door skill, the rulebook and specbook layers, the four workflow skills,
-and this plugin's packaging are original work by **Ashwani Kumar**, MIT-licensed
+The Step 0 quick-diagnostic and the Step 6 severity-rating patterns are adapted from the
+MIT-licensed **wondelai/skills** `ux-heuristics` skill. The rest of the method is original.
+
+## Original work (`plugins/superflow/skills/`, `plugins/superflow/workflows/`)
+
+The `superflow` front-door skill, the rulebook and specbook layers, the `design` /
+`ui-reduction` / `handoff-contracts` skills, the `council-vote` and `review-sweep` workflows,
+the hooks, and this plugin's packaging are original work by **Ashwani Kumar**, MIT-licensed
 (see [`LICENSE`](LICENSE)).
