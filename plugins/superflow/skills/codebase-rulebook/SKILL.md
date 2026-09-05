@@ -73,6 +73,12 @@ Validation: Read-only commands only (Glob, Grep, Read).
 
 ## CODEBASE_RULEBOOK.md structure (template auditor fills in)
 
+**This template is the single source of truth for the rulebook's structure.** No
+other file — including `auditor`'s own persona definition — carries a second copy.
+auditor loads this skill and fills the template in verbatim, omitting sections
+that don't apply. Add or rename a section here and nowhere else.
+
+
 ```md
 # CODEBASE RULEBOOK
 
@@ -87,7 +93,7 @@ _Sections marked <!-- human-edited --> are preserved on refresh._
 - Monorepo: yes/no (if yes, list workspace roots)
 - Common commands:
   - install: ...
-  - codezilla: ...
+  - dev: ...
   - build: ...
   - test: ...
   - lint: ...

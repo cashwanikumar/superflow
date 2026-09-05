@@ -36,7 +36,7 @@ The lead frames the screen, delegates the design to `superflow:designer`, then p
 
 1. Restate the screen and goal in one sentence so the user can confirm intent.
 2. Frame the problem: locate the screen's code (component files, routes), name its job(s), and note any constraints from `CODEBASE_RULEBOOK.md` (design-system import rules, lint bans, component patterns). If a `specbook/` exists, read the affected capability spec too.
-3. Delegate to `superflow:designer` with the framing below. Designer decides whether the reduction gate fires; do not pre-empt that decision.
+3. Delegate to `superflow:designer` with the framing below. The reduction gate and its criteria belong to `designer` — it decides whether the gate fires, on its own reading of the screen. Do not pre-empt, restate, or second-guess that decision here.
 4. Receive the spec. Check it is **grounded**: real components, variants, and tokens from the project's design system — no invented tokens, nothing the project's lint rules ban.
 5. **Build an interactive mock from the spec** — a self-contained clickable HTML page using the project's real design tokens (both color modes), with the key interactions wired. If the spec changes *navigation structure*, mock the leading candidate but expect to pivot: layout **feel** is decided by clicking, never by prose — this is where the real design decisions happen.
 6. **Iterate the mock with the user until they lock it.** Each round: they react, you update the mock in place. Where the evolving mock and the original spec disagree, **the mock wins**.
@@ -56,12 +56,11 @@ Owner: `superflow:designer`
 Objective: Produce a design spec for <screen>, per the stated goal.
 Scope: <the screen's component files>, plus the project's design-system source
   (token/theme files, variant/recipe definitions, the component library).
-Constraints: Read-only — no code. If the screen is non-trivial (multi-section,
-  cluttered, or the goal says simplify/declutter), FIRST load the
-  `superflow:ui-reduction` skill and walk its method to a simplified structure
-  (diagnosis, ASCII wireframe, kept/moved/cut reconciliation), THEN run the taste
-  pass on that structure. Express everything in the project's real components,
-  variants, and tokens (discover them; see CODEBASE_RULEBOOK.md).
+Constraints: Read-only — no code. Run your own reduction gate as your persona
+  defines it, on this screen, before the taste pass; the criteria are yours and
+  this brief does not restate or override them. Express everything in the
+  project's real components, variants, and tokens (discover them; see
+  CODEBASE_RULEBOOK.md).
   New primitives/variants/tokens may be PROPOSED as handoff items only — never
   spec'd as inline hacks.
 Expected output: The full design spec per designer's output format, including the

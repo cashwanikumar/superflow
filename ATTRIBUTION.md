@@ -5,15 +5,19 @@ process-discipline skills. See [`docs/2026-08-14-superflow-design.md`](docs/2026
 
 ## Vendored: Superpowers skills (`plugins/superflow/skills/`)
 
-14 of the 21 skills under `plugins/superflow/skills/` are **verbatim copies** of skills from
-the **Superpowers** plugin: `brainstorming`, `dispatching-parallel-agents`, `executing-plans`,
+13 of the 23 skills under `plugins/superflow/skills/` are copies of skills from
+the **Superpowers** plugin: `brainstorming`, `dispatching-parallel-agents`,
 `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`,
 `subagent-driven-development`, `systematic-debugging`, `test-driven-development`,
 `using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`,
-and `writing-skills`.
+and `writing-skills`. Most are verbatim; `writing-plans` and `subagent-driven-development`
+have had their references to Superpowers' `executing-plans` skill removed, since superflow
+does not vendor it (subagents are always available in Claude Code, and `executing-plans`
+defers to `subagent-driven-development` whenever they are).
 
-The remaining 7 are ours and are **not** Superpowers work: `superflow/`, `codebase-rulebook/`,
-`specbook/`, `commit-prep/`, `council/`, `daily-brief/`, and `handoff/`.
+The remaining 10 are ours and are **not** Superpowers work: `superflow/`, `codebase-rulebook/`,
+`specbook/`, `commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, `ui-reduction/`,
+and `handoff-contracts/`.
 
 - Project: **Superpowers** — https://github.com/obra/superpowers
 - Author: **Jesse Vincent** (obra)
