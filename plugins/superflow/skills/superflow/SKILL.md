@@ -5,7 +5,7 @@ description: The front door for non-trivial coding work in this repo — pairs a
 
 # superflow — the full-flow front door
 
-superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) and **specialist personas** (sherlock, bossbaby, designer, codezilla, testers, bughunter, a11y-hunter, architect, auditor). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
+superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) and **specialist personas** (sherlock, bossbaby, designer, codezilla, unit-tester, bughunter, a11y-hunter, architect, auditor). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
 
 ## 1. Skill-check (always-on, lightweight)
 
@@ -13,11 +13,11 @@ Before acting on any non-trivial coding turn, if a process skill fits the work, 
 
 | The work is… | Invoke first |
 |---|---|
-| a build / new feature / behavior change | `brainstorming` |
-| a bug / test failure / unexpected behavior | `systematic-debugging` |
-| responding to code-review feedback | `receiving-code-review` |
+| a build / new feature / behavior change | `superflow:brainstorming` |
+| a bug / test failure / unexpected behavior | `superflow:systematic-debugging` |
+| responding to code-review feedback | `superflow:receiving-code-review` |
 
-For how skills are discovered and invoked in general, reference the **`using-superpowers`** skill — superflow is the front door and defers to it rather than duplicating it. Don't restate its mechanics here.
+**`using-superpowers` owns the mechanics; this table owns the dispatch.** That skill is the authority on *how* skills are found, announced, and prioritized, and on the rationalizations that talk you out of one — load it for any of that, and where it and this section disagree on process, it wins. What this table adds is the resolved `superflow:`-prefixed name to actually invoke (§3 explains why the bare name is not safe to dispatch) plus the review-feedback row, which has no equivalent there. Nothing else about skill invocation belongs in this file.
 
 ## 2. Opt-in gate (before spawning personas)
 
@@ -67,7 +67,7 @@ Skip any stage that doesn't apply.
 | Isolate | `superflow:using-git-worktrees` | — |
 | Design (UI) | `superflow:design` (mock-locked) · `superflow:ui-reduction` (declutter) | `superflow:designer` |
 | Build | `superflow:test-driven-development` | `superflow:codezilla` (consults rulebook) |
-| Verify | `superflow:verification-before-completion` | `superflow:fe-unit-tester` / `superflow:be-unit-tester`, `superflow:bughunter`, `superflow:a11y-hunter` |
+| Verify | `superflow:verification-before-completion` | `superflow:unit-tester`, `superflow:bughunter`, `superflow:a11y-hunter` |
 | Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` · `/superflow:review-sweep` for big diffs | `superflow:architect` |
 | Debug | `superflow:systematic-debugging` | `superflow:sherlock` → `superflow:bughunter` |
 | Finish | `superflow:finishing-a-development-branch` | `superflow:auditor` (rulebook refresh) · `superflow:bossbaby` (specbook fold-back, if a change folder is open) |
@@ -111,7 +111,7 @@ When present:
 - **Green tests are necessary, not sufficient.** For any user-facing change, verify by exercising the real path in the running app (run it / hit the endpoint / load the page), not just that tests and lint pass — see `verification-before-completion`.
 - Knowledge lives in the on-demand skills and the rulebook, not in always-on context.
 
-## Personas (10)
+## Personas (9)
 
 | Persona | Role |
 |---|---|
@@ -120,8 +120,7 @@ When present:
 | `sherlock` | Read-only investigator; maps the terrain before others act. |
 | `designer` | UX/UI spec before code (read-only). |
 | `codezilla` | Implementer; tight code, consults the rulebook. |
-| `fe-unit-tester` | Frontend unit tests, mirroring the repo's setup. |
-| `be-unit-tester` | Backend unit tests, mirroring the repo's setup. |
+| `unit-tester` | Unit tests, frontend or backend, mirroring the repo's setup. |
 | `bughunter` | Functional QA + convention/security red flags. |
 | `a11y-hunter` | Accessibility to WCAG 2.0 AA (frontend). |
 | `auditor` | Read-only rule-scanner; writes/refreshes the rulebook. |

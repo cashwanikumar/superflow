@@ -126,7 +126,7 @@ accounts named it in exit notes.
 
 ```md
 # Tasks: Recurring invoices
-Written by the writing-plans skill. Checkbox items — executing-plans
+Written by the writing-plans skill. Checkbox items — subagent-driven-development
 consumes this file unchanged.
 
 ### Task 1: schedule column + model

@@ -22,25 +22,25 @@ ledger and the tool results carry the record.
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
     "subagent-driven-development" [shape=box];
-    "executing-plans" [shape=box];
-    "Manual execution or brainstorm first" [shape=box];
+    "Inline execution in this session" [shape=box];
+    "Brainstorm and write a plan first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
-    "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
-    "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+    "Have implementation plan?" -> "Brainstorm and write a plan first" [label="no"];
+    "Tasks mostly independent?" -> "subagent-driven-development" [label="yes"];
+    "Tasks mostly independent?" -> "Inline execution in this session" [label="no - tightly coupled"];
 }
 ```
 
-**vs. Executing Plans (parallel session):**
-- Same session (no context switch)
+**Why this over working the plan inline:**
 - Fresh subagent per task (no context pollution)
 - Review after each task (spec compliance + code quality), broad review at the end
 - Faster iteration (no human-in-loop between tasks)
+- Your own context stays free for coordination
+
+Tightly coupled tasks are the exception — work those inline, following the
+plan's steps and verifications in order.
 
 ## The Process
 
