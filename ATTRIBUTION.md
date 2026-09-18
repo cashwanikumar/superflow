@@ -5,15 +5,17 @@ process-discipline skills. See [`docs/2026-08-14-superflow-design.md`](docs/2026
 
 ## Vendored: Superpowers skills (`plugins/superflow/skills/`)
 
-13 of the 23 skills under `plugins/superflow/skills/` are copies of skills from
-the **Superpowers** plugin: `brainstorming`, `dispatching-parallel-agents`,
-`finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`,
-`subagent-driven-development`, `systematic-debugging`, `test-driven-development`,
-`using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`,
-and `writing-skills`. Most are verbatim; `writing-plans` and `subagent-driven-development`
-have had their references to Superpowers' `executing-plans` skill removed, since superflow
-does not vendor it (subagents are always available in Claude Code, and `executing-plans`
-defers to `subagent-driven-development` whenever they are).
+10 of the 20 skills under `plugins/superflow/skills/` are copies of skills from
+the **Superpowers** plugin: `brainstorming`, `finishing-a-development-branch`,
+`receiving-code-review`, `requesting-code-review`, `systematic-debugging`,
+`test-driven-development`, `using-git-worktrees`, `using-superpowers`,
+`verification-before-completion`, and `writing-plans`. Two edits are applied on
+top: `superpowers:<skill>` references are rewritten to `superflow:<skill>` so they
+resolve inside this plugin, and `writing-plans` no longer points at Superpowers'
+`executing-plans` / `subagent-driven-development` skills, which superflow does not
+vendor (the weave's `codezilla` stage works the plan instead). Upstream's
+`writing-skills`, `subagent-driven-development` and `dispatching-parallel-agents`
+were dropped in 0.7.0.
 
 The remaining 10 are ours and are **not** Superpowers work: `superflow/`, `codebase-rulebook/`,
 `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, `ui-reduction/`,

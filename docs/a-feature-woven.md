@@ -126,8 +126,8 @@ accounts named it in exit notes.
 
 ```md
 # Tasks: Recurring invoices
-Written by the writing-plans skill. Checkbox items — subagent-driven-development
-consumes this file unchanged.
+Written by the writing-plans skill. Checkbox items — codezilla works this file
+top to bottom unchanged.
 
 ### Task 1: schedule column + model
 - [ ] Step 1: failing test — schedule accepts monthly|quarterly|null

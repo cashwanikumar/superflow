@@ -5,7 +5,7 @@ description: The front door for non-trivial coding work in this repo — pairs a
 
 # superflow — the full-flow front door
 
-superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees) and **specialist personas** (sherlock, bossbaby, designer, codezilla, unit-tester, bughunter, a11y-hunter, architect, auditor). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
+superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees; addressed here as `superflow:<name>`) and **specialist personas** (sherlock, bossbaby, designer, codezilla, unit-tester, bughunter, a11y-hunter, architect, auditor). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
 
 ## 1. Skill-check (always-on, lightweight)
 
@@ -21,38 +21,40 @@ Before acting on any non-trivial coding turn, if a process skill fits the work, 
 
 ## 2. Opt-in gate (before spawning personas)
 
-> **Main agent only.** If you are a spawned persona/subagent (invoked via the Agent tool), this gate does **not** apply — don't ask the opt-in, don't re-run routing, don't delegate onward unless your task requires it. Execute your persona's work and return it. (You still consult the rulebook before any code change.)
+> **Main agent only.** A spawned persona/subagent (invoked via the Agent tool) skips this gate: don't ask the opt-in, don't re-route, don't delegate onward unless the task requires it. Execute the persona's job and return. (Still consult the rulebook before any code change.)
 
-First, the cheap exits — these apply in every mode:
+**This section is the single source of the gate.** The SessionStart hook injects a two-line pointer to it and nothing more; if the hook and this file ever disagree, this file wins and the hook is the bug.
+
+Cheap exits, every mode:
 
 - **Slash command** (message begins with `/`) → run it; skip the opt-in.
 - **Trivial** (single-line explanation, file read, lookup, "what does X do") → answer directly; no opt-in, no personas.
 
-For everything else, the gate depends on whether anyone can answer it. The SessionStart hook resolves `SUPERFLOW_FLOW` (`auto` default, or `always` / `never`) and states the policy in its protocol line — follow that policy over anything here if they disagree.
+Everything else depends on `SUPERFLOW_FLOW` (`auto` default, `always`, `never`), which the hook resolves and states.
 
-**`auto`, human in the loop** — ask **once** and wait:
+**`auto`, human in the loop** — positive evidence a person is reading this session: a human-authored reply, an earlier answered question, an interruption. Ask **once** and wait:
 
 > Run the full superflow for this? It would: \<one line tailored to THIS task — which personas, in what order\>. (yes / no)
 
-- **yes** → run the weave below via the Agent tool.
-- **no** → answer directly, no sub-agents; don't bring personas up again this turn.
+- **yes** → run the weave (§3) via the Agent tool.
+- **no** → work directly, no sub-agents; don't raise personas again this turn.
 - **Already opted in earlier this session** for the same kind of work → skip the question and proceed.
 
-**`auto`, no human in the loop** (headless, `-p`, CI, or any session that cannot receive a reply) — do **not** ask. A question nobody can answer is not a safe default; it just stalls the run and the work happens anyway, ungoverned. Decide **before touching anything**, and open your reply with the choice — `superflow: weave — <reason>` or `superflow: direct — <reason>` — so the transcript shows which path was taken.
+**`auto`, no human in the loop** (headless, `-p`, CI, or no evidence anyone can reply) — do **not** ask; a question nobody can answer stalls the run. Decide **before touching anything** and open your reply with the choice, verbatim and alone on the first line: `superflow: weave — <reason>` or `superflow: direct — <reason>`. That line is the run's only audit trail.
 
-**The weave is the default.** Going direct requires all three, judged from the request before you start:
+**Headless default is `direct`.** Nobody is watching a headless run, so the cheap path is the safe default and the weave has to earn its spawns. Run the weave when **any** trigger fires:
 
-| | Test |
+| | Weave trigger |
 |---|---|
-| a | The request is **one** capability. An "and" joining two features fails this. |
-| b | You can name the single file you will edit, up front. |
-| c | `CODEBASE_RULEBOOK.md` already covers that kind of change. |
+| a | **More than one capability.** An "and" joining two features, or a request that names two user-facing behaviors. |
+| b | **UI work.** A screen, page, component, layout, or visual change — the designer stage exists for a reason. |
+| c | **Cross-layer.** The change touches more than one of: schema/model, API/backend, frontend, infra — or you cannot name up front the files you will edit. |
 
-Unsure on any → weave. If you claimed `direct` and then find yourself editing a second file, say so plainly in the final message instead of restating the original claim. This asymmetry is deliberate: an unattended run has nobody to catch an under-governed change, and the failure mode observed in testing was a multi-feature request being waved through as "single file, fully covered by the rulebook."
+None fire → `direct`. Direct still means rulebook-first, TDD via the skill-check, and real-path verification; it only skips the persona spawns. If you claimed `direct` and the change grows past the triggers mid-task, say so plainly in the final message rather than restating the claim.
 
-You know which mode you're in; the hook does not. It cannot: the SessionStart payload is byte-identical in both, the hook's stdio is piped either way, and env vars are inherited by child sessions. That's why this branch lives here and not in the shell script.
+You know which mode you're in; the hook does not. The SessionStart payload is byte-identical headless and interactive, the hook's stdio is piped either way, and env vars are inherited by child sessions — so this decision lives here, not in the shell script.
 
-**`always` / `never`** — no judgement call: always run the weave, or never spawn it (work directly, still rulebook-first). Set these for unattended runs where you want the behavior pinned rather than inferred.
+**`always` / `never`** — no judgement call: always run the weave, or never spawn it (direct, rulebook-first). Pin one of these for unattended runs where you want the behavior deterministic rather than inferred.
 
 ## 3. The weave (stage → process skill + persona)
 

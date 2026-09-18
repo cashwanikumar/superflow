@@ -166,7 +166,7 @@ requirements — requirements live in proposal.md.
 # Tasks: <change title>
 
 Written by the writing-plans skill. Keep tasks as `- [ ]` checkbox items so
-subagent-driven-development can consume this file unchanged.
+codezilla can work this file top to bottom unchanged.
 ```
 
 ---

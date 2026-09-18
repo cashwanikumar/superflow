@@ -15,7 +15,7 @@ Type these as slash commands at the prompt:
 /plugin install superflow
 ```
 
-Restart the session so the plugin's SessionStart hook fires. To confirm it loaded, run `/plugin` and check superflow is enabled — you should see 9 personas, 23 skills, and 2 workflows, all addressed as `superflow:<name>`.
+Restart the session so the plugin's SessionStart hook fires. To confirm it loaded, run `/plugin` and check superflow is enabled — you should see 9 personas, 20 skills, and 2 workflows, all addressed as `superflow:<name>`.
 
 ### From the terminal
 
@@ -143,14 +143,14 @@ A run that skips Plan (like Example 1) opens no change folder even with a specbo
 ## What's inside
 
 - **9 personas** (`agents/`) — `sherlock`, `bossbaby`, `designer`, `codezilla`, `unit-tester`, `bughunter`, `a11y-hunter`, `architect`, `auditor`. Read-only investigators, builders, testers, and reviewers, each spawned only when the task needs it.
-- **23 skills** (`skills/`) — 13 process skills vendored from [Superpowers](https://github.com/obra/superpowers) (TDD, brainstorming, systematic-debugging, writing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, finishing-a-development-branch, and more), plus the **`superflow`** front-door skill that weaves them together, plus 7 invocable commands: `/superflow:codebase-rulebook`, `/superflow:specbook`, `/superflow:commit-prep`, `/superflow:council`, `/superflow:design`, `/superflow:daily-brief`, `/superflow:handoff` — and 2 loaded on demand rather than typed: `ui-reduction` (the declutter method behind designer's gate) and `handoff-contracts` (JSON schemas so a persona→persona handoff fails loudly instead of degrading into lossy prose).
+- **20 skills** (`skills/`) — 10 process skills vendored from [Superpowers](https://github.com/obra/superpowers) (TDD, brainstorming, systematic-debugging, writing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, finishing-a-development-branch, using-superpowers), plus the **`superflow`** front-door skill that weaves them together, plus 7 invocable commands: `/superflow:codebase-rulebook`, `/superflow:specbook`, `/superflow:commit-prep`, `/superflow:council`, `/superflow:design`, `/superflow:daily-brief`, `/superflow:handoff` — and 2 loaded on demand rather than typed: `ui-reduction` (the declutter method behind designer's gate) and `handoff-contracts` (JSON schemas so a persona→persona handoff fails loudly instead of degrading into lossy prose).
 - **2 workflows** (`workflows/`) — deterministic scripts for the two calls expensive enough to be worth taking out of the model's hands. `/superflow:council` runs `council-vote`: every voice returns through a JSON schema, so a dropped or abstaining voice is *reported*, never silently missing from the tally. `/superflow:review-sweep` partitions a large diff into coherent slices, runs one `bughunter` per slice, then sends a dedicated skeptic at each finding — surviving findings come back tiered CONFIRMED (traced end to end) or PLAUSIBLE (undecidable from the code alone, and never dropped for want of a repro). Workflows need Dynamic workflows enabled; on Pro, turn them on in `/config`.
 - **A mock-locked design loop** — `/superflow:design` takes a screen from spec to an interactive mock the user clicks and locks, and only then writes the build brief. **Specs propose; mocks decide.** On complex or cluttered screens, `designer` first walks the `ui-reduction` method — structure before styling, with a kept/moved/cut table so nothing disappears silently.
 - **An optional commit gate** — a bare `git commit` can be blocked until it goes through `/superflow:commit-prep`. Off by default; see [Optional setup](#the-commit-gate).
 - **The rulebook** — `/superflow:codebase-rulebook` scans the current repo and writes `CODEBASE_RULEBOOK.md`. This is the portability keystone: it's what lets the generic personas conform to *your* repo. `--refresh` to update it.
 - **The specbook (opt-in)** — `/superflow:specbook` bootstraps `specbook/` in your repo: living per-capability specs with scenario acceptance criteria, plus a folder per change (proposal / design / tasks) archived and folded back into the specs at Finish. The rulebook says *how* your codebase builds; the specbook says *what* it must do. Activates only when the directory exists — superflow never creates it on its own, and headless runs never mention it.
 - **Namespaced, always** — every skill and persona is addressed as `superflow:<name>`, so nothing collides with (or is silently shadowed by) commands and agents you already have in `~/.claude/`.
-- **The superflow flow** — a SessionStart hook injects a short protocol each session: a lightweight always-on skill-check (brainstorming for builds, systematic-debugging for bugs, receiving-code-review for review feedback), then a **one-time opt-in gate** before the heavier multi-persona pipeline spawns — so cost stays under your control. Rulebook-first, minimum-spawn.
+- **The superflow flow** — a SessionStart hook injects a ~200-word pointer each session: route trivial turns directly, load the `superflow` skill for anything else. That skill is the **single source** of the gate — a lightweight always-on skill-check (brainstorming for builds, systematic-debugging for bugs, receiving-code-review for review feedback), then a **one-time opt-in gate** before the heavier multi-persona pipeline spawns. Rulebook-first, minimum-spawn.
 - **Works with or without a human in the loop** — interactive sessions get the opt-in question. Headless runs (`claude -p`, CI, coding agents) never stall on a question nobody can answer: superflow decides by rule and states which path it took. See below to pin the behavior.
 
 ## Optional setup
@@ -220,7 +220,7 @@ A prepared commit opts through by including the token `COMMIT_PREP_OK` in the co
 
 | Value | Behavior |
 |---|---|
-| `auto` (default) | Ask and wait when a human is present. Headless: don't ask — single-file changes fully covered by the rulebook run direct, anything larger runs the weave, and the choice is stated in one line. |
+| `auto` (default) | Ask and wait when a human is present. Headless: don't ask — run **direct** unless a weave trigger fires (more than one capability, UI work, or a cross-layer change), and state the choice in one line. |
 | `always` | Never ask; run the full weave on every non-trivial turn. |
 | `never` | Never ask, never spawn personas; work directly (still rulebook-first). |
 
@@ -236,13 +236,18 @@ One thing `SUPERFLOW_FLOW` never touches: the specbook. Bootstrapping `specbook/
 
 ## Resync Superpowers skills from upstream
 
-The 13 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, `ui-reduction/`, and `handoff-contracts/`, which are ours) are copied from Superpowers and do **not** auto-update. To resync from upstream, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, keeping each skill's files intact. The `superflow/` skill is ours — don't overwrite it.
+The 10 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, `ui-reduction/`, and `handoff-contracts/`, which are ours) are copied from Superpowers and do **not** auto-update. To resync, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, then re-apply the two deliberate edits below. The `superflow/` skill is ours — don't overwrite it.
 
-**Two of them have diverged and need a merge, not a copy.** `writing-plans/` and `subagent-driven-development/` had their references to Superpowers' `executing-plans` skill removed, because superflow does not vendor it — `executing-plans` defers to `subagent-driven-development` whenever subagents exist, and in Claude Code they always do. Overwriting those two from upstream reintroduces pointers to a skill that isn't here. Diff before you copy; everything else is still verbatim.
+**Deliberate divergences — re-apply after a copy:**
+
+1. **Prefix.** Every `superpowers:<skill>` reference is rewritten to `superflow:<skill>`. The bare upstream name does not resolve inside this plugin (`sed -i 's/superpowers:/superflow:/g'` over the copied files does it).
+2. **No `executing-plans` / `subagent-driven-development`.** superflow does not vendor them — in the weave, `codezilla` works `tasks.md` top to bottom, so `writing-plans/` and the specbook templates point there instead. Upstream `writing-plans/` reintroduces the pointers; diff before you copy.
+
+Three upstream skills are intentionally **not** vendored: `writing-skills` (a meta-skill for authoring skills — ~2k lines that never ran in a coding session), `subagent-driven-development` and `dispatching-parallel-agents` (the weave already owns the dispatch). Install Superpowers itself if you want them.
 
 ## Credits
 
-**Built on [Superpowers](https://github.com/obra/superpowers)** by [Jesse Vincent (obra)](https://github.com/obra), MIT-licensed. The process discipline in superflow — TDD, brainstorming, systematic debugging, plan writing, code review, verification, git worktrees — is Superpowers' work, vendored here with its license intact (all but two skills byte-for-byte; see [Resync](#resync-superpowers-skills-from-upstream)). If you want the process skills on their own, install Superpowers directly.
+**Built on [Superpowers](https://github.com/obra/superpowers)** by [Jesse Vincent (obra)](https://github.com/obra), MIT-licensed. The process discipline in superflow — TDD, brainstorming, systematic debugging, plan writing, code review, verification, git worktrees — is Superpowers' work, vendored here with its license intact (byte-for-byte apart from the two divergences listed under [Resync](#resync-superpowers-skills-from-upstream)). If you want the process skills on their own, install Superpowers directly.
 
 superflow adds the persona layer, the rulebook, the specbook, the design and handoff contracts, the deterministic workflows, and the routing that decides which of them runs. The personas and the codebase-rulebook mechanism are a generalized fork of an internal agent-circus plugin. The `ui-reduction` skill's quick-diagnostic and severity-rating patterns are adapted from the MIT-licensed wondelai/skills `ux-heuristics` skill.
 
