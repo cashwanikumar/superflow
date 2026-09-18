@@ -1,76 +1,40 @@
 #!/usr/bin/env bash
 # superflow — session bootstrap.
-# Emits the protocol pointer as a SessionStart JSON payload
-# (hookSpecificOutput.additionalContext) so Claude Code injects it into context
-# reliably. Falls back to plain stdout (also injected for SessionStart) if jq is absent.
+# Emits a SHORT protocol pointer as a SessionStart payload. The full policy (gate
+# tests, weave table, rulebook/specbook rules) lives in ONE place — the
+# `superflow` skill — so this file never restates it and the two cannot drift.
 set -euo pipefail
 
-# Full-flow policy. SUPERFLOW_FLOW=auto (default) | always | never.
-# The hook cannot detect whether a human is present: the SessionStart payload is
-# identical headless and interactive, the hook's stdio is piped either way (the
-# payload arrives on stdin), and env vars leak into child sessions. So `auto` hands
-# the decision to the agent, which does know; `always`/`never` make it deterministic
-# for CI and other unattended runs.
+# SUPERFLOW_FLOW=auto (default) | always | never. The hook cannot tell whether a
+# human is present (payload and stdio are identical either way), so `auto` hands
+# that call to the agent; `always`/`never` pin it for CI.
 case "${SUPERFLOW_FLOW:-auto}" in
-  always)
-    POLICY='Full-flow policy: ALWAYS (SUPERFLOW_FLOW=always). Never ask the opt-in — run the weave on every non-trivial turn.'
-    ;;
-  never)
-    POLICY='Full-flow policy: NEVER (SUPERFLOW_FLOW=never). Never ask the opt-in and never spawn the weave — work directly, still rulebook-first.'
-    ;;
-  *)
-    POLICY='Full-flow policy: AUTO (default).
-Do not assume a human is present. Treat the session as unattended unless there is positive evidence otherwise this turn — a human-authored message that reads like a reply, an earlier answered question, an interruption. Absence of evidence is unattended, because a question asked into an unattended run stalls it and nothing gets done.
-- Human in the loop (positive evidence) → ask once and WAIT:
-    "Run the full superflow for this? It would: <one line tailored to THIS task — which personas, in what order>. (yes / no)"
-  yes → run the weave. no → answer directly, no sub-agents. Already opted in earlier this session for the same kind of work → skip the question and proceed.
-- No human in the loop → do NOT ask; a question nobody can answer only stalls the run. Choose BEFORE you touch anything. The FIRST LINE of your reply must be the choice, verbatim in this format and nothing else on that line: "superflow: weave — <reason>" or "superflow: direct — <reason>". This is the only audit trail an unattended run leaves; do not skip it, and do not bury it mid-reply.
-  Default is the weave. Direct is permitted only when ALL THREE hold, judged from the request before you start:
-    (a) it asks for ONE capability — an "and" joining two features fails this;
-    (b) you can name up front the single file you will edit;
-    (c) CODEBASE_RULEBOOK.md already covers that kind of change.
-  Unsure on any of them → weave. If you claimed direct and then find yourself editing a second file, say so plainly in your final message rather than restating the original claim.
-  Set SUPERFLOW_FLOW=always or SUPERFLOW_FLOW=never to remove the judgement call.'
-    ;;
+  always) POLICY='Flow policy: ALWAYS — never ask; run the weave on every non-trivial turn.' ;;
+  never)  POLICY='Flow policy: NEVER — never ask, never spawn personas; work directly, rulebook-first.' ;;
+  *)      POLICY='Flow policy: AUTO — human present (a reply, an answered question, an interruption this session): ask once "Run the full superflow for this? It would: <personas, in order>. (yes / no)" and wait; a yes earlier this session for the same kind of work carries over. No human: do not ask — decide, and make the FIRST LINE of your reply exactly "superflow: weave — <reason>" or "superflow: direct — <reason>". Headless default is DIRECT; weave only when the superflow skill'"'"'s weave triggers fire (more than one capability, UI work, or cross-layer change).' ;;
 esac
 
-# Spec layer is opt-in per repo: emit the bullet only when specbook/ exists,
-# so repos that never opted in get zero spec noise. Absence is handled (once,
-# interactively, never headless) by the superflow skill, not here.
 SPECBOOK=''
 if [ -d "${CLAUDE_PROJECT_DIR:-.}/specbook" ]; then
-  SPECBOOK='- This repo has a specbook/ (persistent spec layer). Before changing behavior, read the affected specbook/specs/<capability>.md. The preferred save location for design docs and implementation plans is the active change folder — specbook/changes/<change>/design.md and tasks.md — not docs/superpowers/. If a non-weave change alters spec-covered behavior, update the spec in the same change (headless: state the drift in your final message).'
+  SPECBOOK=$'\n- specbook/ present: read the affected specbook/specs/<capability>.md before changing behavior; design.md and tasks.md go in specbook/changes/<change>/.'
 fi
 
-read -r -d '' CONTEXT <<'EOF' || true
-[superflow] This repo uses the superflow plugin — process skills + specialist coding personas that conform to this repo's own conventions. Apply this protocol on every turn (full detail: load the `superflow` skill).
+read -r -d '' CONTEXT <<'EOF2' || true
+[superflow] This repo uses the superflow plugin. MAIN agent only — a spawned persona executes its job and never re-runs this.
 
-This protocol is for the MAIN agent only. A spawned persona/subagent does NOT re-run it — it executes its assigned job directly (still consulting the rulebook before any code change).
-
-Skill-check (always on, before acting on non-trivial work): if a process skill fits, invoke it first — brainstorming (build), systematic-debugging (bug/test failure), receiving-code-review (review feedback). See the `using-superpowers` skill for how skills are discovered.
-
-Routing decision for each user turn:
-- Message begins with "/" → it's a slash command; run it and skip the opt-in.
-- Trivial (single-line explanation, file read, lookup, "what does X do") → answer directly; no opt-in, no delegation.
-- Otherwise (non-trivial, no slash command) → BEFORE doing any work, apply the full-flow policy below.
-  The weave: superflow:sherlock (map) → superflow:bossbaby / superflow:architect (plan) → superflow:designer (UI spec) → superflow:codezilla (build, TDD) → superflow:unit-tester + superflow:bughunter + superflow:a11y-hunter (verify) → superflow:architect (review). Skip whatever doesn't apply.
-  ALWAYS dispatch personas and skills with the superflow: prefix — subagent_type "superflow:codezilla", never bare "codezilla". A bare name either fails to resolve or silently hits a same-named agent in the user's own ~/.claude/agents/, which has never seen this protocol.
-
+Per turn: "/" → run the slash command. Trivial (lookup, explain, read) → answer directly. Anything else → load the `superflow` skill and follow its gate before touching code.
 __POLICY__
+Always:
+- Before any code change, conform to CODEBASE_RULEBOOK.md at the repo root (missing → offer /superflow:codebase-rulebook; headless → run it). A change that must violate it → stop and ask; headless → note it in the final message.__SPECBOOK__
+- Dispatch with the superflow: prefix (subagent_type "superflow:codezilla", never bare). Spawn only the personas the task needs.
+- Green tests are necessary, not sufficient: exercise the real path in the running app, or say plainly that you could not.
+EOF2
 
-Always (every persona, every flow):
-- Before any code change, consult CODEBASE_RULEBOOK.md at the repo root and conform. If it's missing, offer to run /superflow:codebase-rulebook first (headless: just run it). If a change would violate it, stop and ask (exception, or update the rulebook?) — headless, note the violation in your final message instead of stalling. Never invent rules that aren't in it.
-__SPECBOOK__
-- Load only the skill the current step touches; spawn only the personas the task needs. Don't blur the context.
-- Green tests are necessary, not sufficient: for any user-facing change, verify by exercising the real path in the running app (run it / hit the endpoint / load the page) — not just tests and lint. If the environment blocks that (no deps installed, no network, no permission), say so explicitly rather than implying it was verified.
-EOF
-
-CONTEXT="${CONTEXT//__POLICY__/$POLICY}"
-CONTEXT="${CONTEXT//__SPECBOOK__/$SPECBOOK}"
+CONTEXT="${CONTEXT/__POLICY__/$POLICY}"
+CONTEXT="${CONTEXT/__SPECBOOK__/$SPECBOOK}"
 
 if command -v jq >/dev/null 2>&1; then
-  jq -n --arg ctx "$CONTEXT" \
-    '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $ctx}}'
+  jq -n --arg ctx "$CONTEXT" '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:$ctx}}'
 else
   printf '%s\n' "$CONTEXT"
 fi
