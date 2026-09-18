@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.12.0
+
+**Vendor the Build loop. Add tests.**
+
+- **Build stage is now `subagent-driven-development`.** 0.7.0 dropped SDD on the theory that "the weave owns the dispatch", and the Build row became one `codezilla` spawn working the plan top to bottom — no per-task review, no fix-round cap, no rulings ledger. That was the one place superflow was weaker than the upstream it forked. SDD, `executing-plans` and `dispatching-parallel-agents` are vendored again (12 of 17 skills); the weave dispatches SDD's implementer with `subagent_type: superflow:codezilla` and keeps SDD's reviewer prompts as written. Tightly coupled tasks and direct mode run `executing-plans` inline.
+- **`writing-plans` is upstream-clean again.** The local patch that rewrote its execution handoff to `codezilla` is gone; the patch is down to one hunk (a dropped reference to the un-vendored `writing-skills`). `requesting-code-review`'s "after each task in subagent-driven development" line is back as upstream wrote it.
+- **Dropped `handoff`.** `SESSION.md` / `NEXT_STEPS.md` was a convention only this skill read; SDD's ledger carries in-session state, and the harness's own session resume covers the rest.
+- **`tests/`.** `tests/run-tests.sh` runs static checks (frontmatter names, dangling `superflow:` refs, leftover `superpowers:` prefixes, version in three places, README/ATTRIBUTION counts vs the tree, patch touches only vendored files, workflows parse, weave names shipped skills, hook stays under 120 words) and the SessionStart hook contract. `--claude` adds behavioral tests that drive `claude -p --plugin-dir` (trivial gate, code-change routing, ui-reduction trigger). Every static check corresponds to a drift a past release shipped.
+- Counts: 5 personas, 17 skills (12 vendored), 2 workflows, 1 hook.
+
 ## 0.11.0
 
 **Resync the vendored Superpowers skills to 6.3.0, and make resync a command.**

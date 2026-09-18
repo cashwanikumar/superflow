@@ -5,7 +5,7 @@ description: The front door for non-trivial coding work in this repo — pairs a
 
 # superflow — the full-flow front door
 
-superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees; addressed here as `superflow:<name>`) and **five personas** (sherlock, architect, designer, codezilla, bughunter). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
+superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, subagent-driven development, code-review, verification, worktrees; addressed here as `superflow:<name>`) and **five personas** (sherlock, architect, designer, codezilla, bughunter). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
 
 **This file is the single source of the protocol.** The SessionStart hook emits only a pointer to it; nothing else restates the gate, the weave, or the rulebook rule.
 
@@ -54,11 +54,13 @@ Skip any stage that doesn't apply.
 | Plan | `superflow:writing-plans` | `superflow:architect` (design; what & why come from brainstorming with the human — cite the ticket/spec, don't restate it) |
 | Isolate | `superflow:using-git-worktrees` | — |
 | Design (UI) | `superflow:design` (mock-locked) · `superflow:ui-reduction` (declutter) | `superflow:designer` |
-| Build + unit tests | `superflow:test-driven-development` | `superflow:codezilla` (consults rulebook) |
+| Build + unit tests | `superflow:subagent-driven-development` (fresh implementer per task, spec + quality review per task, rulings ledger) · `superflow:test-driven-development` inside each task | `superflow:codezilla` as the implementer `subagent_type`; SDD's reviewer prompts as written |
 | Verify | `superflow:verification-before-completion` | `superflow:bughunter` (functional, convention, security, a11y) |
 | Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` · `/superflow:review-sweep` for big diffs | `superflow:architect` |
 | Debug | `superflow:systematic-debugging` | `superflow:sherlock` → `superflow:bughunter` |
 | Finish | `superflow:finishing-a-development-branch` | — (`/superflow:codebase-rulebook --refresh` if a convention changed) |
+
+**Build stage.** The plan is worked by `superflow:subagent-driven-development`, not by one long-lived agent: dispatch each implementer with `subagent_type: superflow:codezilla` and SDD's implementer prompt (brief file, report file, self-review), keep SDD's task reviewer and re-review prompts as written, and record rulings in its ledger. Tightly coupled tasks, or direct mode with no personas, run `superflow:executing-plans` inline instead. Independent non-plan work fans out via `superflow:dispatching-parallel-agents`.
 
 **Handoffs.** Prose relays lose caveats silently. When one persona's output feeds another, ask the upstream persona to end its report with a short **Handoff** section (what to do, files that matter, constraints, gotchas, out of scope, open questions) and paste that section verbatim into the next spawn. If it's missing, ask that agent once; don't paraphrase around it.
 
@@ -88,7 +90,7 @@ Before **any** code change, consult the relevant section(s) of `CODEBASE_RULEBOO
 | `sherlock` | Read-only investigator; maps the terrain before others act. Also runs the rulebook scan. |
 | `architect` | Technical design and review. Scalability, boundaries, tradeoffs. Not the default builder. |
 | `designer` | UX/UI spec before code (read-only). |
-| `codezilla` | Implementer; tight code, consults the rulebook, writes the unit tests. |
+| `codezilla` | Implementer; tight code, consults the rulebook, writes the unit tests. Runs as SDD's implementer in the Build stage. |
 | `bughunter` | Adversarial QA: functional, convention, security, and accessibility (WCAG 2.0 AA) findings. |
 
 ## Commands
@@ -97,6 +99,5 @@ Before **any** code change, consult the relevant section(s) of `CODEBASE_RULEBOO
 - `/superflow:council` — four-voice deliberation (architect, bughunter, codezilla, product-owner lens; sherlock grounds) on a hard decision; architect synthesizes.
 - `/superflow:review-sweep` — adversarial review sweep over a large diff (workflow; expensive — epic gates only).
 - `/superflow:design` — screen → design spec → **interactive mock the user locks** → build brief for `codezilla`. Specs propose; mocks decide.
-- `/superflow:handoff` — session handoff: write one at the end, read one at the start.
 
 Loaded on demand, not typed: `superflow:ui-reduction` (the declutter method behind designer's gate).

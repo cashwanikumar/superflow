@@ -41,7 +41,7 @@ The lead frames the screen, delegates the design to `superflow:designer`, then p
 5. **Build an interactive mock from the spec** — a self-contained clickable HTML page using the project's real design tokens (both color modes), with the key interactions wired. If the spec changes *navigation structure*, mock the leading candidate but expect to pivot: layout **feel** is decided by clicking, never by prose — this is where the real design decisions happen.
 6. **Iterate the mock with the user until they lock it.** Each round: they react, you update the mock in place. Where the evolving mock and the original spec disagree, **the mock wins**.
 7. On lock: commit the mock into the repo (`docs/mocks/<slug>.html`, or the repo's own convention) as the **fidelity contract**, then produce the **handoff brief** for `codezilla` (format below) — derived from the LOCKED MOCK, not the original spec.
-8. Stop. Implementation starts only when the user approves, and then only via `superflow:codezilla`.
+8. Stop. Implementation starts only when the user approves, and then via `superflow:subagent-driven-development` with `superflow:codezilla` as the implementer (a single-task brief may go to `superflow:codezilla` directly).
 
 **Headless runs** (no human to iterate with): skip steps 5–7's iteration loop. Build the mock, leave it uncommitted in the working tree, and say plainly in the final message that the mock was **not** human-locked — a mock nobody clicked is a proposal, not a contract, and it does not get committed on the user's behalf.
 
