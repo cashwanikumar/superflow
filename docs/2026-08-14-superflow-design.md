@@ -1,6 +1,6 @@
 # superflow — design spec
 
-_Date: 2026-08-14 · Status: approved (design), pending implementation plan_
+_Date: 2026-08-14 · Status: historical. Describes the 0.1–0.7 design; 0.8.0 cut the personas to five and removed the specbook, external council voices, and handoff contracts — see CHANGELOG.md. The filesystem is the source of truth._
 
 ## 1. Overview
 

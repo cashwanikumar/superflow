@@ -35,7 +35,7 @@ If the target isn't clear, ask:
 The lead frames the screen, delegates the design to `superflow:designer`, then produces the `codezilla` handoff.
 
 1. Restate the screen and goal in one sentence so the user can confirm intent.
-2. Frame the problem: locate the screen's code (component files, routes), name its job(s), and note any constraints from `CODEBASE_RULEBOOK.md` (design-system import rules, lint bans, component patterns). If a `specbook/` exists, read the affected capability spec too.
+2. Frame the problem: locate the screen's code (component files, routes), name its job(s), and note any constraints from `CODEBASE_RULEBOOK.md` (design-system import rules, lint bans, component patterns).
 3. Delegate to `superflow:designer` with the framing below. The reduction gate and its criteria belong to `designer` — it decides whether the gate fires, on its own reading of the screen. Do not pre-empt, restate, or second-guess that decision here.
 4. Receive the spec. Check it is **grounded**: real components, variants, and tokens from the project's design system — no invented tokens, nothing the project's lint rules ban.
 5. **Build an interactive mock from the spec** — a self-contained clickable HTML page using the project's real design tokens (both color modes), with the key interactions wired. If the spec changes *navigation structure*, mock the leading candidate but expect to pivot: layout **feel** is decided by clicking, never by prose — this is where the real design decisions happen.

@@ -1,10 +1,10 @@
 export const meta = {
   name: 'council-vote',
   description: 'Multi-voice council for expensive-to-reverse decisions — independent schema-forced votes, no vote ever silently dropped',
-  whenToUse: 'Launched by the `superflow:council` skill AFTER the human confirmed the decision text, the voice roster, and any external spend. Do not launch directly — the skill owns cost confirmation.',
+  whenToUse: 'Launched by the `superflow:council` skill AFTER the human confirmed the decision text. Do not launch directly.',
   phases: [
     { title: 'Ground', detail: 'sherlock gathers code excerpts (skipped when not code-tied)' },
-    { title: 'Voices', detail: 'personas + confirmed external CLIs vote independently, in parallel' },
+    { title: 'Voices', detail: 'four lenses vote independently, in parallel' },
     { title: 'Synthesize', detail: 'architect tallies, quotes disagreements verbatim, recommends' },
   ],
 }
@@ -12,33 +12,23 @@ export const meta = {
 // args = {
 //   decision:  string (required) — the restated decision under review
 //   code_tied: boolean (default true) — spawn sherlock for code excerpts first
-//   providers: array of 'codex' | 'gemini' | 'claude' — external voices the user
-//              EXPLICITLY confirmed in the /council wrapper. Empty/omitted = persona-only.
-//              The wrapper owns cost confirmation; this script never adds a provider.
 //   hints:     optional array of file paths sherlock should start from
 // }
 //
 // Contract with the `superflow:council` skill (the wrapper):
-// - Human confirmation of decision + external spend happens BEFORE launch, in the wrapper.
-// - Sanitization is enforced HERE, per external voice, abort-on-hit → abstain (never a
-//   silent drop, never "best-effort parse then discard").
+// - Human confirmation of the decision text happens BEFORE launch, in the wrapper.
 // - The wrapper renders `synthesis` verbatim and may show the `votes` table.
 
 // The harness may deliver `args` as a JSON-encoded STRING rather than an object (observed
 // 2026-08-11: two consecutive launches died instantly on "args.decision is required" with a
 // perfectly well-formed args object at the call site). Normalize once, here, instead of
 // making every reader defensive — a council run that dies on arg plumbing burns the whole
-// setup cost (roster confirmation, spend approval) for nothing.
+// setup cost for nothing.
 const _args = (typeof args === 'string') ? JSON.parse(args) : args
 const decision = (_args && _args.decision || '').trim()
 if (!decision) throw new Error('council: args.decision is required')
 const codeTied = !_args || _args.code_tied !== false
 const asList = (x) => Array.isArray(x) ? x : x ? [x] : []
-const ALLOWED_PROVIDERS = ['codex', 'gemini', 'claude']
-const providers = asList(_args && _args.providers)
-for (const p of providers) {
-  if (!ALLOWED_PROVIDERS.includes(p)) throw new Error(`council: unknown provider "${p}" — allowed: ${ALLOWED_PROVIDERS.join(', ')}. Only human-confirmed providers may be passed.`)
-}
 const hints = asList(_args && _args.hints)
 
 const VOTE = {
@@ -48,8 +38,7 @@ const VOTE = {
     verdict: { type: 'string', enum: ['proceed', 'proceed-with-changes', 'rethink', 'abstain'] },
     risks: { type: 'array', items: { type: 'string' }, maxItems: 3, description: 'Top risks, most severe first' },
     strongest_alternative: { type: 'string', description: 'The best alternative to the proposal, one sentence' },
-    reasoning: { type: 'string', description: 'The voice\'s core argument. For an abstain: WHY. CLI failure/unparseable → include a raw excerpt of what the CLI returned. Sanitization abort → the pattern CLASS only (e.g. "PEM block in excerpts"), NEVER any excerpt of the constructed prompt.' },
-    sent_summary: { type: 'string', description: 'External voices only — one line for post-run audit: what was sent to the vendor (files + total excerpt lines), or "nothing sent" on abort. Persona voices omit this.' },
+    reasoning: { type: 'string', description: 'The voice\'s core argument. For an abstain: WHY.' },
   },
 }
 
@@ -86,47 +75,7 @@ ${excerpts}
 You are ONE independent voice in a multi-voice council. Your lens: ${lens}
 Steel-man the proposal first, then judge it. Do not average yourself toward a middle verdict — if you think rethink, say rethink. Risks: at most 3, most severe first.`
 
-const SANITIZE = `SANITIZATION (non-negotiable, runs BEFORE anything is sent to the external CLI):
-- never include .env* file contents
-- redact strings matching secret patterns: sk-*, AKIA*, ghp_*, xox[bpars]-*, xoxe-*, xapp-*, PEM private-key blocks (-----BEGIN ... PRIVATE KEY-----), connection strings carrying credentials (scheme://user:password@host), or any high-entropy string near the words key|token|secret|password
-- redact URLs carrying tokens/signatures
-- never include content from /etc/, ~/.ssh/, ~/.aws/, /private/
-If ANY pattern hits inside the prompt you constructed: DO NOT SEND. Return verdict "abstain" with reasoning "sanitization abort: <pattern class> found" — do not include the secret itself.`
-
 phase('Voices')
-const externalVoice = (provider) => agent(`You relay one council vote through the external CLI "${provider}". Follow exactly:
-
-1. Read the provider config: try \`cat .claude/superflow.json\` (repo-local) first, then \`cat ~/.claude/superflow.json\` — first file that exists wins. Find providers.${provider} (command + model). If the CLI is missing (\`command -v\` fails), return verdict "abstain", reasoning "CLI not installed".
-2. Construct this prompt VERBATIM (fill the placeholders):
----
-Decision under review: ${decision}
-${excerpts ? '[code excerpts identical to the block below]' + excerpts : '(no code excerpts)'}
-
-You are one voice in a multi-model council. Respond in this exact format:
-
-## Verdict
-proceed / proceed-with-changes / rethink
-
-## Top 3 risks
-1.
-2.
-3.
-
-## Strongest alternative
-...
-
-## One-line reasoning
-...
-
-Do not preamble. Do not explain that you are an AI. Just respond.
----
-3. ${SANITIZE}
-4. Write the sanitized prompt to a private temp file: \`FILE=$(mktemp)\` then \`chmod 600 "$FILE"\`. Run the CLI from an EMPTY temp directory (\`cd "$(mktemp -d)"\`) so an agentic CLI cannot wander this repo on its own — the vendor must see ONLY the sanitized prompt; where the CLI supports it, disable its file tools / use its read-only sandbox flag. Prefer stdin over argv (e.g. \`codex exec - < "$FILE"\`; fall back to \`"$(cat "$FILE")"\` only if stdin is unsupported), append the configured --model/-m flag, and if the CLI rejects the model name retry ONCE without the flag. Up to 3 minutes; then \`rm -f "$FILE"\` — also on failure.
-5. Parse the CLI's stdout into your structured return, mapping verdict wording onto the enum exactly ("proceed with changes" → "proceed-with-changes"). If the output ignores the format, EXTRACT the verdict/risks as best you can; if extraction is impossible, return verdict "abstain" and put the first ~40 lines of raw output in reasoning. A vote is NEVER silently dropped — an abstain with the raw text always reaches synthesis.
-6. Always fill sent_summary: the file paths + total excerpt line count actually sent, or "nothing sent" on any abort.`,
-  { label: `voice:external-${provider}`, phase: 'Voices', schema: VOTE })
-    .then((v) => v && { voice: `external:${provider}`, ...v })
-
 const voices = await parallel([
   () => agent(votePrompt('Technical Evaluator — architecture, correctness, long-term tradeoffs, scaling. Inspect-and-critique only; read the repo if you need ground truth, never modify it.'),
     { agentType: 'superflow:architect', label: 'voice:architect', phase: 'Voices', schema: VOTE })
@@ -138,9 +87,8 @@ const voices = await parallel([
     { agentType: 'superflow:codezilla', label: 'voice:implementation-guide', phase: 'Voices', schema: VOTE })
     .then((v) => v && { voice: 'Implementation Guide', ...v }),
   () => agent(votePrompt('Product — user value, scope, and what this decision costs the people who use the thing. Is the problem worth solving at all, and is this the smallest thing that solves it? Inspect only.'),
-    { agentType: 'superflow:bossbaby', label: 'voice:bossbaby', phase: 'Voices', schema: VOTE })
-    .then((v) => v && { voice: 'bossbaby (product value)', ...v }),
-  ...providers.map((p) => () => externalVoice(p)),
+    { label: 'voice:product', phase: 'Voices', schema: VOTE })
+    .then((v) => v && { voice: 'Product (user value)', ...v }),
 ])
 
 const votes = voices.filter(Boolean)
