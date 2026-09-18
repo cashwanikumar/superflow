@@ -10,7 +10,7 @@ export const meta = {
 }
 
 // args = {
-//   base:  string (default 'main') — diff base: reviews base...HEAD
+//   base:  string (default: the remote's default branch via origin/HEAD, else main) — reviews base...HEAD
 //   scope: optional array of paths — overrides the diff; use for the post-fix re-run
 //   note:  optional string — context for reviewers ("this is the cage cutover epic", etc.)
 // }
@@ -18,13 +18,19 @@ export const meta = {
 // Findings come back in two tiers, both reported:
 //   CONFIRMED — survived a dedicated refuter with evidence. Act on these.
 //   PLAUSIBLE — the skeptic could neither refute nor confirm (integration-seam bugs land
-//               here; this repo's worst bugs are exactly that class, so they are NEVER
+//               here — the class that costs the most in production — so they are NEVER
 //               dropped for want of a repro).
 
-const base = (args && args.base) || 'main'
-const rawScope = args && args.scope
+// `args` arrives verbatim; a caller that JSON-encodes it hands us a string. Normalize once so
+// a scoped re-run passed as a string does not silently review the full diff.
+const _args = (typeof args === 'string') ? JSON.parse(args) : (args || {})
+const base = _args.base || null
+const baseCmd = base ? `git diff --name-only ${base}...HEAD`
+  : 'git diff --name-only "$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo main)...HEAD"'
+const baseLabel = base || 'origin/HEAD (default branch)'
+const rawScope = _args.scope
 const scope = Array.isArray(rawScope) ? rawScope : rawScope ? [rawScope] : null
-const note = (args && args.note) || ''
+const note = _args.note || ''
 
 const PARTITIONS = {
   type: 'object',
@@ -83,7 +89,7 @@ phase('Partition')
 const plan = await agent(`Partition this repo's pending changes into coherent review slices.
 
 ${scope ? `SCOPED RE-RUN — review exactly these paths (a fix round just touched them): ${scope.join(', ')}. Skip the git diff.`
-        : `Run \`git diff --name-only ${base}...HEAD\` (and \`git status --porcelain\` for uncommitted work) to list changed files.`}
+        : `Run \`${baseCmd}\` (and \`git status --porcelain\` for uncommitted work) to list changed files.`}
 For each changed file, find its blast radius: try \`graphify affected <file>\` first; if the CLI or graph is missing, fall back to grep for importers/references — never block on graphify. Skip generated/vendored artifacts (node_modules/, dist/, build/, graphify-out/) and any nested worktree copies of this repo.
 Group changed files + blast-radius neighbors into 2-6 slices a single reviewer can hold coherently (by subsystem/seam, not by count). EVERY changed file must land in a slice or be listed in left_out with a reason. If there are no changes at all, return empty_diff: true.
 Read-only — inspect, never modify.${note ? ` Context: ${note}` : ''}`,
@@ -91,14 +97,14 @@ Read-only — inspect, never modify.${note ? ` Context: ${note}` : ''}`,
 
 if (!plan || plan.empty_diff || !(plan.partitions || []).length) {
   log('Nothing to review — empty diff')
-  return { confirmed: [], plausible: [], refuted_count: 0, unverified_count: 0, partitions: [], note: 'empty diff — nothing reviewed' }
+  return { confirmed: [], plausible: [], refuted_count: 0, unverified_count: 0, dead_slices: [], left_out: [], partitions: [], note: 'empty diff — nothing reviewed' }
 }
 if ((plan.left_out || []).length) log(`NOT covered by any slice: ${plan.left_out.join(', ')}`)
 log(`Partitions: ${plan.partitions.map((p) => `${p.name} (${p.files.length} files)`).join(' · ')}`)
 
 phase('Sweep')
 const swept = await parallel(plan.partitions.map((p) => () =>
-  agent(`Adversarial review of ONE slice of this repo's pending changes (diff base: ${base}).
+  agent(`Adversarial review of ONE slice of this repo's pending changes (diff base: ${baseLabel}).
 
 Your slice — ${p.name}: ${p.rationale}
 Files (changed + blast radius): ${p.files.join(', ')}
@@ -107,6 +113,8 @@ Hunt for real defects: logic errors, broken edge cases, regressions in the blast
 Read-only — inspect, never modify. graphify is best-effort; grep works too. Report only defects you can point at code for — no style nits, no speculation without a code path. An empty findings list is a valid, good answer.`,
     { agentType: 'superflow:bughunter', label: `sweep:${p.name}`, phase: 'Sweep', schema: FINDINGS })))
 
+const deadSlices = plan.partitions.filter((_, i) => !swept[i]).map((p) => p.name)
+if (deadSlices.length) log(`${deadSlices.length} slice(s) returned nothing (agent died) — NOT reviewed: ${deadSlices.join(', ')}`)
 const all = swept.filter(Boolean).flatMap((r) => r.findings || [])
 const seen = new Set()
 const unique = all.filter((f) => {
@@ -116,7 +124,7 @@ const unique = all.filter((f) => {
   return true
 })
 log(`Findings: ${all.length} raw → ${unique.length} after dedupe`)
-if (!unique.length) return { confirmed: [], plausible: [], refuted_count: 0, unverified_count: 0, partitions: plan.partitions.map((p) => p.name), note: 'no findings' }
+if (!unique.length) return { confirmed: [], plausible: [], refuted_count: 0, unverified_count: 0, dead_slices: deadSlices, left_out: plan.left_out || [], partitions: plan.partitions.map((p) => p.name), note: deadSlices.length ? 'no findings, but some slices were not reviewed' : 'no findings' }
 
 phase('Verify')
 const verified = await parallel(unique.map((f) => () =>
@@ -135,18 +143,23 @@ Never refute for lack of a reproduction alone — absence of repro is not absenc
     .then((v) => v && { ...f, tier: v.tier, verify_evidence: v.evidence })))
 
 const kept = verified.filter(Boolean)
+const unverified = unique.filter((_, i) => !verified[i])
+if (unverified.length) log(`${unverified.length} finding(s) lost their verifier — returned as unverified, not dropped`)
 const rank = { high: 0, medium: 1, low: 2 }
 const bySeverity = (a, b) => (rank[a.severity] ?? 3) - (rank[b.severity] ?? 3)
 const confirmed = kept.filter((f) => f.tier === 'CONFIRMED').sort(bySeverity)
 const plausible = kept.filter((f) => f.tier === 'PLAUSIBLE').sort(bySeverity)
 const refuted = kept.filter((f) => f.tier === 'REFUTED')
-log(`Verified: ${confirmed.length} CONFIRMED · ${plausible.length} PLAUSIBLE · ${refuted.length} refuted`)
+log(`Verified: ${confirmed.length} CONFIRMED · ${plausible.length} PLAUSIBLE · ${refuted.length} refuted · ${unverified.length} unverified`)
 
 return {
   confirmed,
   plausible,
+  unverified,
   refuted_count: refuted.length,
-  unverified_count: unique.length - kept.length,
+  unverified_count: unverified.length,
+  dead_slices: deadSlices,
+  left_out: plan.left_out || [],
   partitions: plan.partitions.map((p) => p.name),
-  note: '',
+  note: deadSlices.length ? `slices not reviewed: ${deadSlices.join(', ')}` : '',
 }

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.10.0
+
+**Cut the shell, keep the core.** Same five personas, same rulebook, same two workflows; the routing and gating machinery around them is gone.
+
+- **Gate simplified to what a model can actually decide.** `auto` now means: ask once per session before the first persona spawn, remember the answer; a run that cannot return a reply works direct and says so. Dropped the human-presence heuristic (undecidable on turn 1 of every interactive session), the `superflow: weave — <reason>` first-line stamp (nothing read it), and the a/b/c weave-trigger table. `always` / `never` unchanged.
+- **Hook is a pointer again, for real.** `session-start.sh` emits ~60 words: the running version, the `SUPERFLOW_FLOW` value, and "trivial → answer; code change → load the `superflow` skill". 0.7.0 claimed this and then restated the whole `auto` policy in the same file; the copies had already drifted. SessionStart now matches `startup|clear|compact` so a resume does not re-inject it.
+- **Dropped the commit gate** (`require-commit-prep.sh`, the PreToolUse hook, `commit-prep`). It ran on every Bash call for an off-by-default feature, its deny message printed the bypass token, and `commit-prep` restated the harness's default commit flow.
+- **Dropped `using-superpowers`.** Its precedence clause let "questions are tasks" override the 0.8.0 trivial gate. The three operative sentences now live in `superflow` §1.
+- **Folded `daily-brief` into `handoff`** (`/superflow:handoff resume`). One skill, two directions; the only reader/writer pair was `SESSION.md`.
+- **Rulebook template carries `[ENFORCED]` / `[OBSERVED]` labels.** Real rulebooks were already using them and consumers depend on them; a `--refresh` under the old template would have dropped them.
+- **Enforced read-only** on `sherlock` and `designer` via `disallowedTools` instead of prose.
+- **Headless `design` no longer commits the mock** into the user's repo.
+- **`review-sweep`**: default diff base is the remote's default branch (was hardcoded `main`); a string `args` is normalized like `council-vote` does; dead sweep slices and lost verifiers are logged and returned (`dead_slices`, `unverified`, `left_out`) instead of silently dropped.
+- `marketplace.json` no longer carries a version or persona count — `plugin.json` is the one source.
+- Retired `docs/2026-08-14-superflow-design.md` (described 10 personas + the specbook) to git history.
+- Counts: 5 personas, 15 skills (9 vendored), 2 workflows, 1 hook.
+
 ## 0.9.0
 
 **Fold `bossbaby`.** Personas 6 → 5.

@@ -1,24 +1,25 @@
 # Attribution
 
 **superflow** is a portable Claude Code plugin that combines coding personas with
-process-discipline skills. See [`docs/2026-08-14-superflow-design.md`](docs/2026-08-14-superflow-design.md).
+process-discipline skills. See the README for how it works.
 
 ## Vendored: Superpowers skills (`plugins/superflow/skills/`)
 
-10 of the 18 skills under `plugins/superflow/skills/` are copies of skills from
+9 of the 15 skills under `plugins/superflow/skills/` are copies of skills from
 the **Superpowers** plugin: `brainstorming`, `finishing-a-development-branch`,
 `receiving-code-review`, `requesting-code-review`, `systematic-debugging`,
-`test-driven-development`, `using-git-worktrees`, `using-superpowers`,
+`test-driven-development`, `using-git-worktrees`,
 `verification-before-completion`, and `writing-plans`. Two edits are applied on
 top: `superpowers:<skill>` references are rewritten to `superflow:<skill>` so they
 resolve inside this plugin, and `writing-plans` no longer points at Superpowers'
 `executing-plans` / `subagent-driven-development` skills, which superflow does not
 vendor (the weave's `codezilla` stage works the plan instead). Upstream's
 `writing-skills`, `subagent-driven-development` and `dispatching-parallel-agents`
-were dropped in 0.7.0.
+were dropped in 0.7.0; `using-superpowers` in 0.10.0 (three sentences of it now live in
+the `superflow` skill §1, credited here).
 
-The remaining 8 are ours and are **not** Superpowers work: `superflow/`, `codebase-rulebook/`,
-`commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, and `ui-reduction/`.
+The remaining 6 are ours and are **not** Superpowers work: `superflow/`, `codebase-rulebook/`,
+`council/`, `handoff/`, `design/`, and `ui-reduction/`.
 
 - Project: **Superpowers** — https://github.com/obra/superpowers
 - Author: **Jesse Vincent** (obra)
@@ -26,8 +27,7 @@ The remaining 8 are ours and are **not** Superpowers work: `superflow/`, `codeba
 
 These files are redistributed under their original MIT license. All credit for the
 Superpowers skills belongs to their author. This project claims no ownership over them.
-They are vendored (not auto-updated) — see the README's "Resync Superpowers skills from
-upstream" note.
+They are vendored (not auto-updated) — see the README's "Resync the vendored skills" note.
 
 ## Personas (`plugins/superflow/agents/`)
 
@@ -44,5 +44,5 @@ MIT-licensed **wondelai/skills** `ux-heuristics` skill. The rest of the method i
 
 The `superflow` front-door skill, the rulebook layer, the `design` / `ui-reduction` skills,
 the `council-vote` and `review-sweep` workflows,
-the hooks, and this plugin's packaging are original work by **Ashwani Kumar**, MIT-licensed
+the hook, and this plugin's packaging are original work by **Ashwani Kumar**, MIT-licensed
 (see [`LICENSE`](LICENSE)).

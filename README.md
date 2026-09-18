@@ -22,7 +22,7 @@ claude plugin install superflow@superflow      # add --scope to control reach
 | `project` | this repo, shared with your team via committed settings |
 | `local` | this repo, your machine only (gitignored `.claude/settings.local.json`) |
 
-Restart the session so the SessionStart hook fires; `/plugin` should show superflow with 5 personas, 18 skills, 2 workflows, all addressed as `superflow:<name>`.
+Restart the session so the SessionStart hook fires; `/plugin` should show superflow with 5 personas, 15 skills, 2 workflows, all addressed as `superflow:<name>`. The hook's first token is the running version (`[superflow 0.10.0]`) — if it doesn't match the repo, a stale scoped copy is winning (see below).
 
 Then, once per repo:
 
@@ -73,7 +73,7 @@ Two calls are expensive enough to be scripted rather than left to the model:
 - `/superflow:council` — a hard, expensive-to-reverse decision. Independent schema-forced votes from `architect`, `bughunter`, `codezilla` and a product-owner lens; `architect` synthesizes. A dropped or abstaining voice is reported, never silently missing.
 - `/superflow:review-sweep` — epic gates and diffs over ~5 files. The diff is partitioned, one `bughunter` per slice, then a dedicated skeptic per finding. Survivors come back **CONFIRMED** (traced end to end) or **PLAUSIBLE** (undecidable from code alone, never dropped for want of a repro). Needs Dynamic workflows enabled (`/config` on Pro).
 
-Other commands: `/superflow:design` (spec → interactive mock → build brief), `/superflow:commit-prep`, `/superflow:daily-brief`, `/superflow:handoff`.
+Other commands: `/superflow:design` (spec → interactive mock → build brief), `/superflow:handoff` (write one at the end of a session, `resume` at the start).
 
 ## Unattended runs
 
@@ -81,7 +81,7 @@ Other commands: `/superflow:design` (spec → interactive mock → build brief),
 
 | Value | Behavior |
 |---|---|
-| `auto` (default) | Ask and wait when a human is present. Headless: don't ask — run **direct** unless a weave trigger fires (more than one capability, UI work, or a cross-layer change), and state the choice in one line. |
+| `auto` (default) | Ask once per session before the first persona spawn, remember the answer. A run that cannot return a reply (`-p`, CI) works **direct** — rulebook-first, skills, no personas — and says so in one line. |
 | `always` | Never ask; run the full weave on every non-trivial turn. |
 | `never` | Never ask, never spawn personas; work directly (still rulebook-first). |
 
@@ -89,21 +89,11 @@ Other commands: `/superflow:design` (spec → interactive mock → build brief),
 SUPERFLOW_FLOW=always claude -p "add the delete endpoint"
 ```
 
-On `auto` with nobody to ask, the agent opens its reply with the choice, verbatim: `superflow: weave — <reason>` or `superflow: direct — <reason>`. That line is the only audit trail an unattended run leaves, so grep CI logs for it. The hook deliberately does not try to sniff whether a human is present — the SessionStart payload is identical either way and env vars leak into child sessions — so the decision is left to the agent, which actually knows.
+Pin `always` or `never` for unattended runs where you want deterministic behavior. Headless runs never commit on your behalf; the one file they may write is `CODEBASE_RULEBOOK.md` when it is missing, and the final message says so.
 
 ## Optional setup
 
 Everything below is off unless you turn it on.
-
-### The commit gate
-
-Off by default. Turn it on per repo and a bare `git commit` is blocked until it goes through `/superflow:commit-prep`:
-
-```bash
-export SUPERFLOW_COMMIT_GATE=1              # or: {"commitGate": true} in .claude/superflow.json
-```
-
-A prepared commit opts through by including the token `COMMIT_PREP_OK` anywhere in the command (e.g. a trailing `# COMMIT_PREP_OK` comment). It stays off by default because superflow installs at user scope, and a plugin that silently blocks commits in every repo you open is a hostile default.
 
 ### graphify (code graph)
 
@@ -120,10 +110,10 @@ Without it, both personas fall back to grep silently and never ask you to instal
 
 ## Resync the vendored skills
 
-The 10 skills copied from Superpowers (`brainstorming`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`) do not auto-update. Copy the matching directories from the upstream repo, then re-apply two edits: `sed -i 's/superpowers:/superflow:/g'` over the copied files, and point `writing-plans` at `codezilla` instead of the un-vendored `executing-plans` / `subagent-driven-development`.
+The 9 skills copied from Superpowers (`brainstorming`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`) do not auto-update. Copy the matching directories from the upstream repo, then re-apply the local edits: `sed -i 's/superpowers:/superflow:/g'` over the copied files, and point `writing-plans` at `codezilla` instead of the un-vendored `executing-plans` / `subagent-driven-development`. Diff against upstream after copying — the local edits are small and easy to spot.
 
-Three upstream skills are intentionally **not** vendored: `writing-skills` (a meta-skill for authoring skills), `subagent-driven-development` and `dispatching-parallel-agents` (the weave already owns the dispatch). Install Superpowers itself if you want them.
+Upstream skills intentionally **not** vendored: `using-superpowers` (its three operative sentences live in the `superflow` skill §1), `writing-skills`, `subagent-driven-development` and `dispatching-parallel-agents` (the weave owns the dispatch). Install Superpowers itself if you want them.
 
 ## Credits
 
-Built on [Superpowers](https://github.com/obra/superpowers) by Jesse Vincent (obra), MIT. superflow adds the personas, the rulebook, the design loop, the two workflows, and the routing. The personas and the rulebook mechanism are a generalized fork of an internal agent-circus plugin; the `ui-reduction` skill's quick-diagnostic and severity patterns are adapted from the MIT-licensed wondelai/skills `ux-heuristics` skill. Docs: [Designing a Screen](docs/designing-a-screen.md) · [original design spec](docs/2026-08-14-superflow-design.md). Provenance: [ATTRIBUTION.md](ATTRIBUTION.md).
+Built on [Superpowers](https://github.com/obra/superpowers) by Jesse Vincent (obra), MIT. superflow adds the personas, the rulebook, the design loop, the two workflows, and the routing. The personas and the rulebook mechanism are a generalized fork of an internal agent-circus plugin; the `ui-reduction` skill's quick-diagnostic and severity patterns are adapted from the MIT-licensed wondelai/skills `ux-heuristics` skill. Docs: [Designing a Screen](docs/designing-a-screen.md). Provenance: [ATTRIBUTION.md](ATTRIBUTION.md).
