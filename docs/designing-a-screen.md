@@ -2,7 +2,7 @@
 
 How superflow gets from *"this page is a mess"* to code someone can trust — and why there's a human checkpoint in the middle of it.
 
-> Applies to superflow 0.5+. Companion pages: [The Weave & the Specbook](the-weave-and-the-specbook.md) · [A Feature, Woven](a-feature-woven.md).
+> Applies to superflow 0.5+.
 
 ---
 
@@ -35,7 +35,7 @@ flowchart TD
 
 ## Stage 1 — Framing (the lead)
 
-Before `designer` is spawned, the lead locates the screen's code, names the job(s) it does, and reads the constraints that will decide whether a spec is even buildable: `CODEBASE_RULEBOOK.md`'s design-system rules, import bans, lint rules. If a `specbook/` exists, the affected capability spec too.
+Before `designer` is spawned, the lead locates the screen's code, names the job(s) it does, and reads the constraints that will decide whether a spec is even buildable: `CODEBASE_RULEBOOK.md`'s design-system rules, import bans, lint rules.
 
 This is why a generic designer persona can produce a spec that fits *your* repo — it isn't guessing at your design system, it's been pointed at it.
 

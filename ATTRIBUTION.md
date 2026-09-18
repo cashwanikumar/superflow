@@ -5,7 +5,7 @@ process-discipline skills. See [`docs/2026-08-14-superflow-design.md`](docs/2026
 
 ## Vendored: Superpowers skills (`plugins/superflow/skills/`)
 
-10 of the 20 skills under `plugins/superflow/skills/` are copies of skills from
+10 of the 18 skills under `plugins/superflow/skills/` are copies of skills from
 the **Superpowers** plugin: `brainstorming`, `finishing-a-development-branch`,
 `receiving-code-review`, `requesting-code-review`, `systematic-debugging`,
 `test-driven-development`, `using-git-worktrees`, `using-superpowers`,
@@ -17,9 +17,8 @@ vendor (the weave's `codezilla` stage works the plan instead). Upstream's
 `writing-skills`, `subagent-driven-development` and `dispatching-parallel-agents`
 were dropped in 0.7.0.
 
-The remaining 10 are ours and are **not** Superpowers work: `superflow/`, `codebase-rulebook/`,
-`specbook/`, `commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, `ui-reduction/`,
-and `handoff-contracts/`.
+The remaining 8 are ours and are **not** Superpowers work: `superflow/`, `codebase-rulebook/`,
+`commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, and `ui-reduction/`.
 
 - Project: **Superpowers** — https://github.com/obra/superpowers
 - Author: **Jesse Vincent** (obra)
@@ -43,7 +42,7 @@ MIT-licensed **wondelai/skills** `ux-heuristics` skill. The rest of the method i
 
 ## Original work (`plugins/superflow/skills/`, `plugins/superflow/workflows/`)
 
-The `superflow` front-door skill, the rulebook and specbook layers, the `design` /
-`ui-reduction` / `handoff-contracts` skills, the `council-vote` and `review-sweep` workflows,
+The `superflow` front-door skill, the rulebook layer, the `design` / `ui-reduction` skills,
+the `council-vote` and `review-sweep` workflows,
 the hooks, and this plugin's packaging are original work by **Ashwani Kumar**, MIT-licensed
 (see [`LICENSE`](LICENSE)).

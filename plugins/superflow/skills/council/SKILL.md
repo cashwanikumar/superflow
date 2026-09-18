@@ -1,6 +1,6 @@
 ---
 name: council
-description: Multi-voice deliberation on a hard, expensive-to-reverse architectural or product decision — independent schema-forced votes from each persona (plus optional external model CLIs), synthesized by architect. Use when the user runs /superflow:council or explicitly asks for a full council on a decision.
+description: Multi-voice deliberation on a hard, expensive-to-reverse architectural or product decision — independent schema-forced votes from each persona, synthesized by architect. Use when the user runs /superflow:council or explicitly asks for a full council on a decision.
 ---
 
 # Council
@@ -9,7 +9,7 @@ Full multi-voice deliberation on a hard architectural or product decision. Each 
 
 Use this for genuinely hard, expensive-to-reverse calls. For a quick gut-check, just ask `superflow:architect` or `superflow:bughunter` directly — a council run is not cheap.
 
-This skill is the **front door**. The deliberation itself runs as a deterministic workflow, `council-vote`, so no voice can be silently dropped: every vote comes back through a JSON schema, and a voice that dies or abstains is reported rather than quietly missing from the tally. This skill's job is everything the script must not decide for you — what the decision actually is, who votes, and whether you're spending money outside Anthropic.
+This skill is the **front door**. The deliberation itself runs as a deterministic workflow, `council-vote`, so no voice can be silently dropped: every vote comes back through a JSON schema, and a voice that dies or abstains is reported rather than quietly missing from the tally. This skill's job is the one thing the script must not decide for you: what the decision actually is.
 
 ---
 
@@ -27,25 +27,17 @@ This skill is the **front door**. The deliberation itself runs as a deterministi
 
 ### 1. Confirm the decision text
 
-Restate the decision in **one sentence** and get the user to confirm it. This sentence is passed verbatim to every voice — a vague decision produces five vague votes, and you will have paid for all of them.
+Restate the decision in **one sentence** and get the user to confirm it. This sentence is passed verbatim to every voice — a vague decision produces four vague votes, and you will have paid for all of them.
 
 If the decision isn't clear, ask: *"What's the decision you want the council to weigh in on?"*
 
-### 2. Confirm the roster and any external spend
+### 2. Know the roster
 
-The default roster is persona-only and costs nothing beyond this session: `architect` (technical), `bughunter` (failure modes), `codezilla` (shippability), `bossbaby` (product value), plus `sherlock` grounding when the decision is code-tied.
-
-External model CLIs (`codex`, `gemini`, `claude`) can be added as extra voices — **but only ones the user explicitly names in this turn.** These call third-party CLIs installed on the user's machine and may bill the user's own vendor accounts. Never add one on your own initiative, and never carry a provider over from an earlier council. If the user asks for external voices, confirm the spend before launching.
-
-External voices read their command + model from `.claude/superflow.json` (repo-local) or `~/.claude/superflow.json`:
-
-```json
-{ "providers": { "codex": { "command": "codex", "model": "..." } } }
-```
+Always the same: `architect` (technical), `bughunter` (failure modes), `codezilla` (shippability), `bossbaby` (product value), plus `sherlock` grounding when the decision is code-tied. Nothing to confirm and nothing billed outside this session.
 
 ### 3. Launch the workflow
 
-Only after both confirmations, launch `council-vote` via the **Workflow** tool:
+Once the decision text is confirmed, launch `council-vote` via the **Workflow** tool:
 
 ```
 Workflow({
@@ -53,7 +45,6 @@ Workflow({
   args: {
     decision:  "<the confirmed one-sentence decision>",
     code_tied: true,                    // false for pure product/process calls — skips sherlock
-    providers: [],                      // ONLY user-confirmed external CLIs
     hints:     ["path/to/relevant.ts"]  // optional starting points for sherlock
   }
 })
@@ -70,9 +61,9 @@ Render `synthesis` **verbatim** — it is already in the council format, and re-
 ## Rules
 
 - Inspect and deliberate only. Never edit files during a council.
-- The decision text and the external-spend approval are **the human's**, confirmed before launch. The script never adds a provider on its own.
+- The decision text is **the human's**, confirmed before launch.
 - Highlight disagreements — don't smooth them over. A 3-2 split is a finding; say so.
 - Abstains are reported, never counted as votes, and never dropped — an abstain's raw output can still carry signal.
 - The final verdict is `architect`'s call, not a vote count — explain it if it diverges from the majority.
 - If the decision is trivial (formatting, rename, tiny refactor), say so and skip the ceremony.
-- **Headless runs:** if external providers were not pre-specified in the invocation, run persona-only rather than stalling on a confirmation nobody can give, and say so in the final message.
+- **Headless runs:** take the decision text from the invocation as-is rather than stalling on a confirmation nobody can give, and say so in the final message.

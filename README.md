@@ -1,55 +1,36 @@
 # superflow
 
-superflow is a portable, self-contained Claude Code plugin that turns non-trivial coding work into a coherent pipeline — brainstorm → plan → build (TDD) → verify → review → finish — driven by specialist personas and disciplined by the battle-tested process skills of [Superpowers](https://github.com/obra/superpowers). It drops into **any** repository and adapts to that repo's conventions through a self-scanning `CODEBASE_RULEBOOK.md`, so it isn't tied to any particular stack.
+A portable Claude Code plugin that turns non-trivial coding work into one pipeline — brainstorm → plan → build (TDD) → verify → review — run by six specialist personas and disciplined by the process skills of [Superpowers](https://github.com/obra/superpowers). It fits any repo by scanning that repo's own conventions into a `CODEBASE_RULEBOOK.md`.
 
 ## Install
-
-You need [Claude Code](https://claude.com/claude-code) and git access to this repo. superflow ships as a **plugin marketplace**, so installing is two steps: register the marketplace, then install the plugin from it.
-
-### In a Claude Code session
-
-Type these as slash commands at the prompt:
 
 ```
 /plugin marketplace add https://github.com/cashwanikumar/superflow
 /plugin install superflow
 ```
 
-Restart the session so the plugin's SessionStart hook fires. To confirm it loaded, run `/plugin` and check superflow is enabled — you should see 9 personas, 20 skills, and 2 workflows, all addressed as `superflow:<name>`.
-
-### From the terminal
-
-The same thing without opening a session — useful for scripting, CI images, and dotfiles:
+Or from the terminal:
 
 ```bash
 claude plugin marketplace add https://github.com/cashwanikumar/superflow
-claude plugin install superflow@superflow            # add --scope to control reach
-claude plugin details superflow                      # inventory + projected token cost
+claude plugin install superflow@superflow      # add --scope to control reach
 ```
 
-`--scope` decides who gets it:
-
-| Scope | Where it applies |
+| `--scope` | Where it applies |
 |---|---|
 | `user` (default) | every repo you open |
 | `project` | this repo, shared with your team via committed settings |
 | `local` | this repo, your machine only (gitignored `.claude/settings.local.json`) |
 
-### First run in a repo
+Restart the session so the SessionStart hook fires; `/plugin` should show superflow with 6 personas, 18 skills, 2 workflows, all addressed as `superflow:<name>`.
 
-Bootstrap the rulebook once — this is what teaches the generic personas your repo's conventions:
+Then, once per repo:
 
 ```
 /superflow:codebase-rulebook
 ```
 
-Optionally, opt the repo into the persistent spec layer:
-
-```
-/superflow:specbook
-```
-
-### Updating and removing
+That writes `CODEBASE_RULEBOOK.md` — the conventions every persona conforms to. Without it the personas are generic; with it they fit your codebase.
 
 ```bash
 claude plugin marketplace update superflow           # pull the latest marketplace metadata
@@ -57,164 +38,44 @@ claude plugin update superflow@superflow             # restart required to apply
 claude plugin uninstall superflow@superflow          # add the same --scope you installed with
 ```
 
-`update` and `uninstall` need the **`@superflow` marketplace suffix** — the bare
-name resolves for `install` and `details` but not for these, which fail with
-`Plugin "superflow" not found`. Both also default to `--scope user`: if you
-installed at `project` or `local` scope, pass the same `--scope` again or that
-copy stays on the old version — and local/project take precedence over user, so
-a stale one wins silently.
-
-Note that superflow never claims a bare command name — everything is `superflow:<name>`, so it can't shadow, or be shadowed by, commands and agents already in your `~/.claude/`.
+`update` and `uninstall` need the **`@superflow` marketplace suffix** — the bare name resolves for `install` and `details` but not for these. Both default to `--scope user`: if you installed at `project` or `local` scope, pass the same `--scope` again, or that copy stays on the old version — and local/project take precedence over user, so a stale one wins silently.
 
 ## How it works
 
-> **More detail:** [The Weave & the Specbook](docs/the-weave-and-the-specbook.md) — the pipeline, the spec layer, and the deterministic workflows, diagrammed · [Designing a Screen](docs/designing-a-screen.md) — the reduction gate and the mock-lock loop · [A Feature, Woven](docs/a-feature-woven.md) — one feature end to end, as a session diary.
-
-superflow has **two tiers**. A cheap check runs on every turn and never spawns agents; the expensive half — the full process skills *and* the persona team — sits behind a single opt-in gate. So a quick question stays quick, and neither ingredient is invoked wholesale on work that doesn't need it.
+Every turn gets a cheap check; the expensive part sits behind one gate.
 
 ```mermaid
-flowchart TD
-    A([Your message]) --> SC{{"Always-on skill-check<br/>cheap · loads a skill only if one fits · no agents"}}
-    SC -->|"trivial: question, lookup"| ANS([Answer directly — nothing spawned])
-    SC -->|"non-trivial task"| GATE{"Opt-in gate<br/>run the full flow?"}
-    GATE -->|"no · solo"| SOLO["superflow + you, in-thread<br/>only the relevant skill · consults CODEBASE_RULEBOOK.md"]
-    GATE -->|"yes · the weave"| WEAVE["Skill + persona per stage<br/>runs only the stages that apply"]
-    SOLO --> SHIP([Shipped — same quality bar])
-    WEAVE --> SHIP
+flowchart LR
+    A([Your message]) --> T{trivial?}
+    T -->|"question, lookup, opinion"| D([Answer directly])
+    T -->|"code change"| G{"Run the full flow?"}
+    G -->|no| S["You + the process skills, in-thread"]
+    G -->|yes| W["The weave: skill + persona per stage,<br/>only the stages that apply"]
 ```
 
-**Saying "yes" runs the whole machine, automatically** — you don't pick skills. Each stage has a fixed skill+persona binding, so the process skills (`brainstorming`, `writing-plans`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `finishing-a-development-branch`…) load as their stage runs, and the matching personas spawn alongside. The gate is your cost control: `yes` is the expensive path, and it's what pulls in real git worktrees and the full pipeline.
+**The weave**, in order; each stage is skipped when it doesn't apply:
 
-The **task decides how much of the team shows up** — superflow runs the minimum. Two examples, same gate and same quality bar, but the `yes` branch grows with the work.
+| Stage | Process skill | Persona |
+|---|---|---|
+| Understand | brainstorming | `sherlock` (read-only map) |
+| Plan | writing-plans | `bossbaby` (what & why) → `architect` (design) |
+| Isolate | using-git-worktrees | — |
+| Design (UI) | design · ui-reduction | `designer` → mock you click and lock |
+| Build + unit tests | test-driven-development | `codezilla` |
+| Verify | verification-before-completion | `bughunter` (functional · convention · security · a11y) |
+| Review | requesting/receiving-code-review | `architect` |
+| Debug | systematic-debugging | `sherlock` → `bughunter` |
 
-### Example 1 — a small change (4 of 9 stages)
+A one-line fix runs three stages; a full-stack feature runs all of them. Saying **yes** is the cost control — it's what spawns personas and pulls in worktrees.
 
-```mermaid
-flowchart TD
-    Q(["Add a rate limit to /login"]) --> G{"Opt-in gate"}
-    G -->|no| S["superflow + you<br/>test-first, in-thread"]
-    G -->|yes| F["Understand · sherlock"]
-    F --> D["Build · codezilla · TDD"]
-    D --> B["Verify · bughunter"]
-    B --> R["Review · architect"]
-    S --> Z([Shipped])
-    R --> Z
-```
+Two calls are expensive enough to be scripted rather than left to the model:
 
-### Example 2 — a full-stack feature (8 of 9 stages)
+- `/superflow:council` — a hard, expensive-to-reverse decision. Independent schema-forced votes from `architect`, `bughunter`, `codezilla`, `bossbaby`; `architect` synthesizes. A dropped or abstaining voice is reported, never silently missing.
+- `/superflow:review-sweep` — epic gates and diffs over ~5 files. The diff is partitioned, one `bughunter` per slice, then a dedicated skeptic per finding. Survivors come back **CONFIRMED** (traced end to end) or **PLAUSIBLE** (undecidable from code alone, never dropped for want of a repro). Needs Dynamic workflows enabled (`/config` on Pro).
 
-```mermaid
-flowchart TD
-    Q(["Add sign-in with Google (OAuth)"]) --> G{"Opt-in gate"}
-    G -->|"no · rarely here"| S["superflow + you<br/>a lot to carry solo"]
-    G -->|"yes"| U["Understand · sherlock"]
-    U --> P["Plan · bossbaby + architect"]
-    P --> I["Isolate · git worktree"]
-    I --> DE["Design · designer<br/>spec → mock → <b>you lock it</b>"]
-    DE --> BU["Build · codezilla · TDD"]
-    BU --> V["Verify · QA + a11y"]
-    V --> RE["Review · architect"]
-    RE --> FI["Finish · auditor"]
-    S --> Z([Shipped])
-    FI --> Z
-```
+Other commands: `/superflow:design` (spec → interactive mock → build brief), `/superflow:commit-prep`, `/superflow:daily-brief`, `/superflow:handoff`.
 
-Only Debug sits out of the OAuth run (nothing's broken yet). The `no` branch is kept for symmetry; for a feature that size you'd almost always say `yes`.
-
-### Example 3 — the same feature, with a specbook (opt-in)
-
-With a `specbook/` present in the target repo (see below), Plan additionally writes the change folder (proposal / design / tasks) and Finish adds `bossbaby` to fold the change back into the living specs — so the requirements outlive the conversation.
-
-```mermaid
-flowchart TD
-    CMD(["/superflow:specbook — run once"]) -->|bootstrap| S["specbook/specs/*.md<br/>living requirements · Given/When/Then scenarios"]
-    Q(["Add sign-in with Google (OAuth)"]) --> U["Understand · sherlock"]
-    S -.->|reads| U
-    U --> P["Plan · bossbaby + architect<br/>opens changes/2026-08-16-google-oauth/<br/>proposal.md · design.md · tasks.md"]
-    P --> BU["Build · codezilla · works tasks.md, TDD"]
-    BU --> V["Verify · bughunter tests the deltas' Scenarios"]
-    V --> RE["Review · architect · change folder = requirements input"]
-    RE --> FI["Finish · bossbaby folds Spec deltas into specs/<br/>moves the folder to archive/"]
-    FI -->|fold-back| S
-```
-
-A run that skips Plan (like Example 1) opens no change folder even with a specbook present — minimum-spawn survives the layer. No `specbook/` in the repo? Nothing changes at all.
-
-## What's inside
-
-- **9 personas** (`agents/`) — `sherlock`, `bossbaby`, `designer`, `codezilla`, `unit-tester`, `bughunter`, `a11y-hunter`, `architect`, `auditor`. Read-only investigators, builders, testers, and reviewers, each spawned only when the task needs it.
-- **20 skills** (`skills/`) — 10 process skills vendored from [Superpowers](https://github.com/obra/superpowers) (TDD, brainstorming, systematic-debugging, writing-plans, requesting/receiving-code-review, verification-before-completion, using-git-worktrees, finishing-a-development-branch, using-superpowers), plus the **`superflow`** front-door skill that weaves them together, plus 7 invocable commands: `/superflow:codebase-rulebook`, `/superflow:specbook`, `/superflow:commit-prep`, `/superflow:council`, `/superflow:design`, `/superflow:daily-brief`, `/superflow:handoff` — and 2 loaded on demand rather than typed: `ui-reduction` (the declutter method behind designer's gate) and `handoff-contracts` (JSON schemas so a persona→persona handoff fails loudly instead of degrading into lossy prose).
-- **2 workflows** (`workflows/`) — deterministic scripts for the two calls expensive enough to be worth taking out of the model's hands. `/superflow:council` runs `council-vote`: every voice returns through a JSON schema, so a dropped or abstaining voice is *reported*, never silently missing from the tally. `/superflow:review-sweep` partitions a large diff into coherent slices, runs one `bughunter` per slice, then sends a dedicated skeptic at each finding — surviving findings come back tiered CONFIRMED (traced end to end) or PLAUSIBLE (undecidable from the code alone, and never dropped for want of a repro). Workflows need Dynamic workflows enabled; on Pro, turn them on in `/config`.
-- **A mock-locked design loop** — `/superflow:design` takes a screen from spec to an interactive mock the user clicks and locks, and only then writes the build brief. **Specs propose; mocks decide.** On complex or cluttered screens, `designer` first walks the `ui-reduction` method — structure before styling, with a kept/moved/cut table so nothing disappears silently.
-- **An optional commit gate** — a bare `git commit` can be blocked until it goes through `/superflow:commit-prep`. Off by default; see [Optional setup](#the-commit-gate).
-- **The rulebook** — `/superflow:codebase-rulebook` scans the current repo and writes `CODEBASE_RULEBOOK.md`. This is the portability keystone: it's what lets the generic personas conform to *your* repo. `--refresh` to update it.
-- **The specbook (opt-in)** — `/superflow:specbook` bootstraps `specbook/` in your repo: living per-capability specs with scenario acceptance criteria, plus a folder per change (proposal / design / tasks) archived and folded back into the specs at Finish. The rulebook says *how* your codebase builds; the specbook says *what* it must do. Activates only when the directory exists — superflow never creates it on its own, and headless runs never mention it.
-- **Namespaced, always** — every skill and persona is addressed as `superflow:<name>`, so nothing collides with (or is silently shadowed by) commands and agents you already have in `~/.claude/`.
-- **The superflow flow** — a SessionStart hook injects a ~200-word pointer each session: route trivial turns directly, load the `superflow` skill for anything else. That skill is the **single source** of the gate — a lightweight always-on skill-check (brainstorming for builds, systematic-debugging for bugs, receiving-code-review for review feedback), then a **one-time opt-in gate** before the heavier multi-persona pipeline spawns. Rulebook-first, minimum-spawn.
-- **Works with or without a human in the loop** — interactive sessions get the opt-in question. Headless runs (`claude -p`, CI, coding agents) never stall on a question nobody can answer: superflow decides by rule and states which path it took. See below to pin the behavior.
-
-## Optional setup
-
-Everything below is off unless you turn it on. superflow works fully without any of it — these buy extra capability at the cost of installing or configuring something.
-
-### External voices for the council
-
-`/superflow:council` runs a persona-only roster by default: `architect`, `bughunter`, `codezilla`, `bossbaby`, plus `sherlock` grounding when the decision is code-tied. That costs nothing beyond the session.
-
-You can additionally route votes through **other vendors' CLIs**, so a hard call gets judged by models that don't share Claude's blind spots. Install whichever CLIs you want (`codex`, `gemini`, `claude`), then declare them in `.claude/superflow.json` — repo-local, or `~/.claude/superflow.json` for all repos:
-
-```json
-{
-  "providers": {
-    "codex":  { "command": "codex exec", "model": "gpt-5.6-sol" },
-    "gemini": { "command": "gemini -p",  "model": "gemini-2.5-pro" },
-    "claude": { "command": "claude -p",  "model": "fable" }
-  }
-}
-```
-
-`claude` is a legitimate third entry, not a duplicate of the persona voices: it's a fresh `claude -p` subprocess with no shared context, which is a different thing from a persona spawned by the agent chairing the council. Model names go stale — each CLI only accepts its own set, so if one is rejected the workflow retries once without the `--model` flag rather than failing the voice.
-
-Then ask for them by name — and only then:
-
-```
-/superflow:council should we move the runner off Celery — include codex and gemini
-```
-
-**These bill your own vendor accounts, so they are never added on your behalf.** The council skill confirms the spend with you before launching, the workflow refuses any provider you didn't explicitly name in that turn, and a provider is never carried over from an earlier council. A missing CLI returns an abstain with a reason, not a crash.
-
-What the workflow does to each external voice, whether or not you ask for it:
-
-- **Sanitizes before sending.** `.env*` contents, key/token patterns (`sk-*`, `AKIA*`, `ghp_*`, `xox*-*`, PEM blocks), credentialed connection strings, signed URLs, and anything from `/etc/`, `~/.ssh/`, `~/.aws/` are refused. If a pattern hits inside the constructed prompt, the run **aborts that voice** and returns an abstain naming the pattern *class* — never the secret.
-- **Runs the CLI from an empty temp directory**, with its file tools disabled where the CLI supports it, so an agentic vendor CLI can't wander your repo on its own. The prompt goes in via a `chmod 600` temp file, deleted on success and failure alike.
-- **Never silently drops a vote.** Unparseable output comes back as an abstain carrying the raw text; abstains are reported in the synthesis and never counted as votes. Each external voice also returns a one-line `sent_summary` — what was actually transmitted — for post-run audit.
-
-### graphify (code graph)
-
-`sherlock` and `bughunter` can use a local tree-sitter code graph to answer structure questions in one call instead of ten file reads — `sherlock` for "what does this symbol touch", `bughunter` for the reverse direction nobody checks by hand: "what breaks if this changes".
-
-It is **optional and not bundled** — graphify is a Python package with native tree-sitter grammars, so it can't ride along in a markdown plugin. Install it yourself:
-
-```bash
-pipx install graphifyy
-graphify extract . --code-only     # once per repo — builds graphify-out/
-graphify update .                  # incremental refresh, seconds, no LLM
-echo "graphify-out/" >> .gitignore
-```
-
-Without it, nothing breaks and nothing nags: both personas fall back to glob/grep silently and never ask you to install anything mid-task. The graph is an accelerator, not a requirement — and it gives you *structure*, never semantics, so anything load-bearing still gets read from the source.
-
-### The commit gate
-
-Off by default. Turn it on per repo and a bare `git commit` is blocked until it goes through `/superflow:commit-prep`:
-
-```bash
-export SUPERFLOW_COMMIT_GATE=1              # or: {"commitGate": true} in .claude/superflow.json
-```
-
-A prepared commit opts through by including the token `COMMIT_PREP_OK` in the command. It stays off by default because superflow installs at user scope, and a plugin that silently blocks commits in every repo you open is a hostile default.
-
-## Unattended / headless runs
+## Unattended runs
 
 `SUPERFLOW_FLOW` controls the opt-in gate:
 
@@ -228,27 +89,41 @@ A prepared commit opts through by including the token `COMMIT_PREP_OK` in the co
 SUPERFLOW_FLOW=always claude -p "add the delete endpoint"
 ```
 
-Pin it with `always`/`never` when you want unattended behavior to be deterministic rather than inferred. Note that superflow deliberately does *not* try to sniff whether a human is present from the hook — the SessionStart payload is identical in both modes and env vars leak into child sessions, so the decision is left to the agent, which actually knows.
+On `auto` with nobody to ask, the agent opens its reply with the choice, verbatim: `superflow: weave — <reason>` or `superflow: direct — <reason>`. That line is the only audit trail an unattended run leaves, so grep CI logs for it. The hook deliberately does not try to sniff whether a human is present — the SessionStart payload is identical either way and env vars leak into child sessions — so the decision is left to the agent, which actually knows.
 
-There's no separate headless setup — same plugin, same hook, same skills fire either way. On `auto`, when the agent decides for itself (no one to ask), it states the choice as the first line of its reply, verbatim: `superflow: weave — <reason>` or `superflow: direct — <reason>`. That line is the only audit trail an unattended run leaves, so it's worth grepping CI logs for.
+## Optional setup
 
-One thing `SUPERFLOW_FLOW` never touches: the specbook. Bootstrapping `specbook/` always requires you to run `/superflow:specbook` yourself, at least once, interactively — `always` doesn't make headless runs create it, and `never` isn't needed to suppress it. Headless runs simply never create or mention it, full stop.
+Everything below is off unless you turn it on.
 
-## Resync Superpowers skills from upstream
+### The commit gate
 
-The 10 vendored skills under `plugins/superflow/skills/` (everything except `superflow/`, `codebase-rulebook/`, `specbook/`, `commit-prep/`, `council/`, `daily-brief/`, `handoff/`, `design/`, `ui-reduction/`, and `handoff-contracts/`, which are ours) are copied from Superpowers and do **not** auto-update. To resync, copy the matching skill directories from the installed Superpowers plugin cache (or the [obra/superpowers](https://github.com/obra/superpowers) repo) over the ones here, then re-apply the two deliberate edits below. The `superflow/` skill is ours — don't overwrite it.
+Off by default. Turn it on per repo and a bare `git commit` is blocked until it goes through `/superflow:commit-prep`:
 
-**Deliberate divergences — re-apply after a copy:**
+```bash
+export SUPERFLOW_COMMIT_GATE=1              # or: {"commitGate": true} in .claude/superflow.json
+```
 
-1. **Prefix.** Every `superpowers:<skill>` reference is rewritten to `superflow:<skill>`. The bare upstream name does not resolve inside this plugin (`sed -i 's/superpowers:/superflow:/g'` over the copied files does it).
-2. **No `executing-plans` / `subagent-driven-development`.** superflow does not vendor them — in the weave, `codezilla` works `tasks.md` top to bottom, so `writing-plans/` and the specbook templates point there instead. Upstream `writing-plans/` reintroduces the pointers; diff before you copy.
+A prepared commit opts through by including the token `COMMIT_PREP_OK` anywhere in the command (e.g. a trailing `# COMMIT_PREP_OK` comment). It stays off by default because superflow installs at user scope, and a plugin that silently blocks commits in every repo you open is a hostile default.
 
-Three upstream skills are intentionally **not** vendored: `writing-skills` (a meta-skill for authoring skills — ~2k lines that never ran in a coding session), `subagent-driven-development` and `dispatching-parallel-agents` (the weave already owns the dispatch). Install Superpowers itself if you want them.
+### graphify (code graph)
+
+`sherlock` and `bughunter` can use a local tree-sitter code graph to answer structure questions in one call instead of ten file reads — "what does this symbol touch" and the reverse nobody checks by hand, "what breaks if this changes". Not bundled (native grammars can't ride along in a markdown plugin):
+
+```bash
+pipx install graphifyy
+graphify extract . --code-only     # once per repo — builds graphify-out/
+graphify update .                  # incremental refresh, seconds, no LLM
+echo "graphify-out/" >> .gitignore
+```
+
+Without it, both personas fall back to grep silently and never ask you to install anything mid-task. The graph gives you *structure*, never semantics — anything load-bearing still gets read from the source.
+
+## Resync the vendored skills
+
+The 10 skills copied from Superpowers (`brainstorming`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`) do not auto-update. Copy the matching directories from the upstream repo, then re-apply two edits: `sed -i 's/superpowers:/superflow:/g'` over the copied files, and point `writing-plans` at `codezilla` instead of the un-vendored `executing-plans` / `subagent-driven-development`.
+
+Three upstream skills are intentionally **not** vendored: `writing-skills` (a meta-skill for authoring skills), `subagent-driven-development` and `dispatching-parallel-agents` (the weave already owns the dispatch). Install Superpowers itself if you want them.
 
 ## Credits
 
-**Built on [Superpowers](https://github.com/obra/superpowers)** by [Jesse Vincent (obra)](https://github.com/obra), MIT-licensed. The process discipline in superflow — TDD, brainstorming, systematic debugging, plan writing, code review, verification, git worktrees — is Superpowers' work, vendored here with its license intact (byte-for-byte apart from the two divergences listed under [Resync](#resync-superpowers-skills-from-upstream)). If you want the process skills on their own, install Superpowers directly.
-
-superflow adds the persona layer, the rulebook, the specbook, the design and handoff contracts, the deterministic workflows, and the routing that decides which of them runs. The personas and the codebase-rulebook mechanism are a generalized fork of an internal agent-circus plugin. The `ui-reduction` skill's quick-diagnostic and severity-rating patterns are adapted from the MIT-licensed wondelai/skills `ux-heuristics` skill.
-
-Full provenance: [ATTRIBUTION.md](ATTRIBUTION.md).
+Built on [Superpowers](https://github.com/obra/superpowers) by Jesse Vincent (obra), MIT. superflow adds the personas, the rulebook, the design loop, the two workflows, and the routing. The personas and the rulebook mechanism are a generalized fork of an internal agent-circus plugin; the `ui-reduction` skill's quick-diagnostic and severity patterns are adapted from the MIT-licensed wondelai/skills `ux-heuristics` skill. Docs: [Designing a Screen](docs/designing-a-screen.md) · [original design spec](docs/2026-08-14-superflow-design.md). Provenance: [ATTRIBUTION.md](ATTRIBUTION.md).
