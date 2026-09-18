@@ -19,10 +19,9 @@ export const meta = {
 // - Human confirmation of the decision text happens BEFORE launch, in the wrapper.
 // - The wrapper renders `synthesis` verbatim and may show the `votes` table.
 
-// The harness may deliver `args` as a JSON-encoded STRING rather than an object (observed
-// 2026-08-11: two consecutive launches died instantly on "args.decision is required" with a
-// perfectly well-formed args object at the call site). Normalize once, here, instead of
-// making every reader defensive — a council run that dies on arg plumbing burns the whole
+// `args` arrives verbatim; a caller that JSON-encodes the object hands us a string (seen
+// 2026-08-11: two launches died on "args.decision is required"). Normalize once, here, instead
+// of making every reader defensive — a council run that dies on arg plumbing burns the whole
 // setup cost for nothing.
 const _args = (typeof args === 'string') ? JSON.parse(args) : args
 const decision = (_args && _args.decision || '').trim()

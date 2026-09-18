@@ -43,7 +43,7 @@ The lead frames the screen, delegates the design to `superflow:designer`, then p
 7. On lock: commit the mock into the repo (`docs/mocks/<slug>.html`, or the repo's own convention) as the **fidelity contract**, then produce the **handoff brief** for `codezilla` (format below) — derived from the LOCKED MOCK, not the original spec.
 8. Stop. Implementation starts only when the user approves, and then only via `superflow:codezilla`.
 
-**Headless runs** (no human to iterate with): skip steps 5–7's iteration loop. Build the mock, commit it, and say plainly in the final message that the mock was **not** human-locked — a mock nobody clicked is a proposal, not a contract.
+**Headless runs** (no human to iterate with): skip steps 5–7's iteration loop. Build the mock, leave it uncommitted in the working tree, and say plainly in the final message that the mock was **not** human-locked — a mock nobody clicked is a proposal, not a contract, and it does not get committed on the user's behalf.
 
 The lead must not write the spec itself and must not implement anything during this skill.
 
