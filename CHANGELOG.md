@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.0
+
+**Resync the vendored Superpowers skills to 6.3.0, and make resync a command.**
+
+- The nine vendored skills were copied from Superpowers 6.2.0 on 2026-08-14, two days after 6.3.0 shipped, and never refreshed. They now match 6.3.0. What that brings: `brainstorming` classifies work as spike / bounded / architectural — a bounded change gets a short in-chat design and no spec or plan document, which is what the weave's "spawn the minimum" always meant; `finishing-a-development-branch` gains the "never `--force` a refused worktree removal" guard; `requesting-code-review`'s reviewer no longer spawns sub-reviewers.
+- `scripts/resync-superpowers.sh` does the refresh: copy, namespace rewrite, re-apply the local edits from `scripts/superpowers-local-edits.patch` (three files: the writing-plans handoff to `codezilla`, two dropped references to un-vendored skills), fail on any dangling `superflow:` reference, stamp the upstream version into `ATTRIBUTION.md`. The README recipe it replaces missed two of the three edits.
+- `superflow` §2: when no reply is possible, brainstorming's approval gate is reported as unsatisfied rather than silently skipped.
+
 ## 0.10.0
 
 **Cut the shell, keep the core.** Same five personas, same rulebook, same two workflows; the routing and gating machinery around them is gone.

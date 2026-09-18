@@ -40,7 +40,7 @@ Everything else depends on `SUPERFLOW_FLOW` (`auto` default, `always`, `never`),
 - **`always`** — never ask; run the weave on every non-trivial turn.
 - **`never`** — never ask, never spawn personas; work directly.
 
-Direct still means rulebook-first, the skill-check in §1, and real-path verification; it only skips the persona spawns. Pin `always` or `never` for unattended runs where you want deterministic behavior.
+Direct still means rulebook-first, the skill-check in §1, and real-path verification; it only skips the persona spawns. `brainstorming` classifies the work (spike / bounded / architectural) and ends every path with your human partner's approval; when no reply is possible, state the classification and the design in the final message, proceed, and say plainly that the approval gate could not be satisfied. Pin `always` or `never` for unattended runs where you want deterministic behavior.
 
 ## 3. The weave (stage → process skill + persona)
 

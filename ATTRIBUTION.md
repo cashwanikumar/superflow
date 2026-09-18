@@ -27,7 +27,9 @@ The remaining 6 are ours and are **not** Superpowers work: `superflow/`, `codeba
 
 These files are redistributed under their original MIT license. All credit for the
 Superpowers skills belongs to their author. This project claims no ownership over them.
-They are vendored (not auto-updated) — see the README's "Resync the vendored skills" note.
+They are vendored (not auto-updated); `scripts/resync-superpowers.sh` refreshes them and
+re-applies the edits above.
+Vendored from Superpowers 6.3.0 (sha n/a) on 2026-09-18.
 
 ## Personas (`plugins/superflow/agents/`)
 
