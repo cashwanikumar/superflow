@@ -110,7 +110,14 @@ Without it, both personas fall back to grep silently and never ask you to instal
 
 ## Resync the vendored skills
 
-The 9 skills copied from Superpowers (`brainstorming`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`) do not auto-update. Copy the matching directories from the upstream repo, then re-apply the local edits: `sed -i 's/superpowers:/superflow:/g'` over the copied files, and point `writing-plans` at `codezilla` instead of the un-vendored `executing-plans` / `subagent-driven-development`. Diff against upstream after copying — the local edits are small and easy to spot.
+The 9 skills copied from Superpowers (`brainstorming`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`) do not auto-update. Refresh them with one command:
+
+```bash
+scripts/resync-superpowers.sh                      # from the newest Superpowers in your plugin cache
+scripts/resync-superpowers.sh /path/to/superpowers # or from a checkout
+```
+
+It copies the nine directories, rewrites `superpowers:` → `superflow:`, re-applies superflow's local edits from `scripts/superpowers-local-edits.patch`, fails loudly if any reference points at a skill this plugin does not ship, and records the upstream version in `ATTRIBUTION.md`. Review the diff, then commit.
 
 Upstream skills intentionally **not** vendored: `using-superpowers` (its three operative sentences live in the `superflow` skill §1), `writing-skills`, `subagent-driven-development` and `dispatching-parallel-agents` (the weave owns the dispatch). Install Superpowers itself if you want them.
 
