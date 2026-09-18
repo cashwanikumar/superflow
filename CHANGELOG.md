@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+
+**Fold `bossbaby`.** Personas 6 → 5.
+
+- **Dropped the PM persona from the build pipeline.** In the weave it ran right after `brainstorming`, which already settles what/why *with the human* — the actual product owner. Sequentially re-deriving that alone, it restated the ticket and invented the parts it could not know (user counts, success metrics, rollout plans), and nothing downstream read the spec it wrote. Plan stage is now `architect` alone, citing the ticket/spec rather than restating it.
+- **Kept the product viewpoint where it earns its seat: `/superflow:council`.** Four voices still vote blind in parallel; the fourth is a product-owner lens carried inline in `council-vote.js`, told explicitly not to invent data it cannot see. Three engineers agreeing is not a council.
+- Counts: 5 personas, 18 skills, 2 workflows.
+
 ## 0.8.0
 
 **Cut the overbuilt edges.** Same pipeline; fewer moving parts, less markdown.

@@ -1,6 +1,6 @@
 # superflow
 
-A portable Claude Code plugin that turns non-trivial coding work into one pipeline — brainstorm → plan → build (TDD) → verify → review — run by six specialist personas and disciplined by the process skills of [Superpowers](https://github.com/obra/superpowers). It fits any repo by scanning that repo's own conventions into a `CODEBASE_RULEBOOK.md`.
+A portable Claude Code plugin that turns non-trivial coding work into one pipeline — brainstorm → plan → build (TDD) → verify → review — run by five specialist personas and disciplined by the process skills of [Superpowers](https://github.com/obra/superpowers). It fits any repo by scanning that repo's own conventions into a `CODEBASE_RULEBOOK.md`.
 
 ## Install
 
@@ -22,7 +22,7 @@ claude plugin install superflow@superflow      # add --scope to control reach
 | `project` | this repo, shared with your team via committed settings |
 | `local` | this repo, your machine only (gitignored `.claude/settings.local.json`) |
 
-Restart the session so the SessionStart hook fires; `/plugin` should show superflow with 6 personas, 18 skills, 2 workflows, all addressed as `superflow:<name>`.
+Restart the session so the SessionStart hook fires; `/plugin` should show superflow with 5 personas, 18 skills, 2 workflows, all addressed as `superflow:<name>`.
 
 Then, once per repo:
 
@@ -58,7 +58,7 @@ flowchart LR
 | Stage | Process skill | Persona |
 |---|---|---|
 | Understand | brainstorming | `sherlock` (read-only map) |
-| Plan | writing-plans | `bossbaby` (what & why) → `architect` (design) |
+| Plan | writing-plans | `architect` (design; what & why already settled with you in brainstorming) |
 | Isolate | using-git-worktrees | — |
 | Design (UI) | design · ui-reduction | `designer` → mock you click and lock |
 | Build + unit tests | test-driven-development | `codezilla` |
@@ -70,7 +70,7 @@ A one-line fix runs three stages; a full-stack feature runs all of them. Saying 
 
 Two calls are expensive enough to be scripted rather than left to the model:
 
-- `/superflow:council` — a hard, expensive-to-reverse decision. Independent schema-forced votes from `architect`, `bughunter`, `codezilla`, `bossbaby`; `architect` synthesizes. A dropped or abstaining voice is reported, never silently missing.
+- `/superflow:council` — a hard, expensive-to-reverse decision. Independent schema-forced votes from `architect`, `bughunter`, `codezilla` and a product-owner lens; `architect` synthesizes. A dropped or abstaining voice is reported, never silently missing.
 - `/superflow:review-sweep` — epic gates and diffs over ~5 files. The diff is partitioned, one `bughunter` per slice, then a dedicated skeptic per finding. Survivors come back **CONFIRMED** (traced end to end) or **PLAUSIBLE** (undecidable from code alone, never dropped for want of a repro). Needs Dynamic workflows enabled (`/config` on Pro).
 
 Other commands: `/superflow:design` (spec → interactive mock → build brief), `/superflow:commit-prep`, `/superflow:daily-brief`, `/superflow:handoff`.

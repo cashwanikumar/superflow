@@ -33,7 +33,7 @@ If the decision isn't clear, ask: *"What's the decision you want the council to 
 
 ### 2. Know the roster
 
-Always the same: `architect` (technical), `bughunter` (failure modes), `codezilla` (shippability), `bossbaby` (product value), plus `sherlock` grounding when the decision is code-tied. Nothing to confirm and nothing billed outside this session.
+Always the same: `architect` (technical), `bughunter` (failure modes), `codezilla` (shippability), and a product-owner voice (user value, scope cost, who loses — carried as a lens inside the workflow, not a persona), plus `sherlock` grounding when the decision is code-tied. Nothing to confirm and nothing billed outside this session.
 
 ### 3. Launch the workflow
 

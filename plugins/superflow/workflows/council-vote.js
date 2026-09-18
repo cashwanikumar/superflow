@@ -86,9 +86,12 @@ const voices = await parallel([
   () => agent(votePrompt('Implementation Guide — shippability: concrete implementation steps, scope check (too small / right-sized / overbuilt), complexity hotspots, honest time-to-ship. Inspect only.'),
     { agentType: 'superflow:codezilla', label: 'voice:implementation-guide', phase: 'Voices', schema: VOTE })
     .then((v) => v && { voice: 'Implementation Guide', ...v }),
-  () => agent(votePrompt('Product — user value, scope, and what this decision costs the people who use the thing. Is the problem worth solving at all, and is this the smallest thing that solves it? Inspect only.'),
-    { agentType: 'superflow:bossbaby', label: 'voice:bossbaby', phase: 'Voices', schema: VOTE })
-    .then((v) => v && { voice: 'bossbaby (product value)', ...v }),
+  // Product lens carried inline — there is no PM persona. In the build pipeline the human
+  // plus brainstorming already own what/why; only here, beside three engineering lenses
+  // voting blind, does a separate product voice add a viewpoint nobody else holds.
+  () => agent(votePrompt('Product owner — user value, scope, and what this decision costs the people who use the thing and the people who pay for it. Is the problem worth solving at all? Is this the smallest thing that solves it? Who loses if it ships — which customers, integrations, or workflows break? Judge from the decision text and the code excerpts; do not invent user counts, metrics, or market data you cannot see. Inspect only.'),
+    { label: 'voice:product', phase: 'Voices', schema: VOTE })
+    .then((v) => v && { voice: 'Product owner (user value)', ...v }),
 ])
 
 const votes = voices.filter(Boolean)
