@@ -4,7 +4,7 @@ export const meta = {
   whenToUse: 'Launched by the `superflow:council` skill AFTER the human confirmed the decision text. Do not launch directly.',
   phases: [
     { title: 'Ground', detail: 'sherlock gathers code excerpts (skipped when not code-tied)' },
-    { title: 'Voices', detail: 'four lenses vote independently, in parallel' },
+    { title: 'Voices', detail: 'personas vote independently, in parallel' },
     { title: 'Synthesize', detail: 'architect tallies, quotes disagreements verbatim, recommends' },
   ],
 }
@@ -87,8 +87,8 @@ const voices = await parallel([
     { agentType: 'superflow:codezilla', label: 'voice:implementation-guide', phase: 'Voices', schema: VOTE })
     .then((v) => v && { voice: 'Implementation Guide', ...v }),
   () => agent(votePrompt('Product — user value, scope, and what this decision costs the people who use the thing. Is the problem worth solving at all, and is this the smallest thing that solves it? Inspect only.'),
-    { label: 'voice:product', phase: 'Voices', schema: VOTE })
-    .then((v) => v && { voice: 'Product (user value)', ...v }),
+    { agentType: 'superflow:bossbaby', label: 'voice:bossbaby', phase: 'Voices', schema: VOTE })
+    .then((v) => v && { voice: 'bossbaby (product value)', ...v }),
 ])
 
 const votes = voices.filter(Boolean)

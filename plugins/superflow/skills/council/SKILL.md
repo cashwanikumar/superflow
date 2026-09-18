@@ -1,6 +1,6 @@
 ---
 name: council
-description: Multi-voice deliberation on a hard, expensive-to-reverse architectural or product decision — independent schema-forced votes from four lenses, synthesized by architect. Use when the user runs /superflow:council or explicitly asks for a full council on a decision.
+description: Multi-voice deliberation on a hard, expensive-to-reverse architectural or product decision — independent schema-forced votes from each persona, synthesized by architect. Use when the user runs /superflow:council or explicitly asks for a full council on a decision.
 ---
 
 # Council
@@ -27,13 +27,13 @@ This skill is the **front door**. The deliberation itself runs as a deterministi
 
 ### 1. Confirm the decision text
 
-Restate the decision in **one sentence** and get the user to confirm it. This sentence is passed verbatim to every voice — a vague decision produces five vague votes, and you will have paid for all of them.
+Restate the decision in **one sentence** and get the user to confirm it. This sentence is passed verbatim to every voice — a vague decision produces four vague votes, and you will have paid for all of them.
 
 If the decision isn't clear, ask: *"What's the decision you want the council to weigh in on?"*
 
 ### 2. Know the roster
 
-Four lenses, always the same: `architect` (technical), `bughunter` (failure modes), `codezilla` (shippability), and a product voice (user value, scope), plus `sherlock` grounding when the decision is code-tied. Nothing to confirm and nothing billed outside this session.
+Always the same: `architect` (technical), `bughunter` (failure modes), `codezilla` (shippability), `bossbaby` (product value), plus `sherlock` grounding when the decision is code-tied. Nothing to confirm and nothing billed outside this session.
 
 ### 3. Launch the workflow
 

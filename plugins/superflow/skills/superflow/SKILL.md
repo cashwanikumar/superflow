@@ -5,7 +5,7 @@ description: The front door for non-trivial coding work in this repo — pairs a
 
 # superflow — the full-flow front door
 
-superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees; addressed here as `superflow:<name>`) and **five personas** (sherlock, architect, designer, codezilla, bughunter). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
+superflow weaves two things into one pipeline: **process skills** (vendored from Superpowers — TDD, brainstorming, systematic-debugging, plans, code-review, verification, worktrees; addressed here as `superflow:<name>`) and **six personas** (sherlock, bossbaby, architect, designer, codezilla, bughunter). Each stage loads only the skill it needs and spawns only the personas the task needs. Spawn the minimum; skip what doesn't apply.
 
 ## 1. Skill-check (always-on, lightweight)
 
@@ -63,7 +63,7 @@ Skip any stage that doesn't apply.
 | Stage | Superpowers skill | Persona |
 |---|---|---|
 | Understand | `superflow:brainstorming` | `superflow:sherlock` |
-| Plan | `superflow:writing-plans` | `superflow:architect` |
+| Plan | `superflow:writing-plans` | `superflow:bossbaby` (what & why) → `superflow:architect` (design) |
 | Isolate | `superflow:using-git-worktrees` | — |
 | Design (UI) | `superflow:design` (mock-locked) · `superflow:ui-reduction` (declutter) | `superflow:designer` |
 | Build + unit tests | `superflow:test-driven-development` | `superflow:codezilla` (consults rulebook) |
@@ -78,7 +78,7 @@ Skip any stage that doesn't apply.
 
 | Command | What it does | When |
 |---|---|---|
-| `/superflow:council` | Confirms the decision text, then runs `council-vote`: four schema-forced independent votes, architect synthesizes. | Hard, expensive-to-reverse calls. |
+| `/superflow:council` | Confirms the decision text, then runs `council-vote`: four schema-forced independent votes (architect, bughunter, codezilla, bossbaby), sherlock grounds, architect synthesizes. | Hard, expensive-to-reverse calls. |
 | `/superflow:review-sweep` | Partitions the diff into slices, one `bughunter` per slice, then one skeptic per finding → CONFIRMED / PLAUSIBLE tiers. | Epic gates and diffs >~5 files ONLY — expensive. Small PRs get a plain `bughunter` pass. |
 
 Both are opt-in and neither runs itself. If Dynamic workflows are unavailable, say so and fall back to the conversational equivalent rather than pretending the run happened.
@@ -93,12 +93,13 @@ Before **any** code change, consult `CODEBASE_RULEBOOK.md` at the repo root and 
 - **Green tests are necessary, not sufficient.** For any user-facing change, verify by exercising the real path in the running app (run it / hit the endpoint / load the page) — see `verification-before-completion`.
 - Knowledge lives in the on-demand skills and the rulebook, not in always-on context.
 
-## Personas (5)
+## Personas (6)
 
 | Persona | Role |
 |---|---|
 | `sherlock` | Read-only investigator; maps the terrain before others act. Also runs the rulebook scan. |
-| `architect` | Plans (user, problem, metric, then design) and reviews. Scalability, boundaries, tradeoffs. Not the default builder. |
+| `bossbaby` | What to build & why — user, problem, metric, scope. Independent of the design so it can push back on it. |
+| `architect` | Technical design and review. Scalability, boundaries, tradeoffs. Not the default builder. |
 | `designer` | UX/UI spec before code (read-only). |
 | `codezilla` | Implementer; tight code, consults the rulebook, writes the unit tests. |
 | `bughunter` | Adversarial QA: functional, convention, security, and accessibility (WCAG 2.0 AA) findings. |
@@ -106,7 +107,7 @@ Before **any** code change, consult `CODEBASE_RULEBOOK.md` at the repo root and 
 ## Commands
 
 - `/superflow:codebase-rulebook` — scan the repo → write `CODEBASE_RULEBOOK.md`. `--refresh` to update.
-- `/superflow:council` — four-lens deliberation on a hard decision; architect synthesizes.
+- `/superflow:council` — four-voice deliberation (architect, bughunter, codezilla, bossbaby; sherlock grounds) on a hard decision; architect synthesizes.
 - `/superflow:review-sweep` — adversarial review sweep over a large diff (workflow; expensive — epic gates only).
 - `/superflow:design` — screen → design spec → **interactive mock the user locks** → build brief for `codezilla`. Specs propose; mocks decide.
 - `/superflow:commit-prep` — summarize the diff + propose a commit message (doesn't commit unless asked). Optional hard gate: `SUPERFLOW_COMMIT_GATE=1` or `{"commitGate": true}` in `.claude/superflow.json`. Off by default.
