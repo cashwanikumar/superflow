@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.1
+
+**Usability lens.** Nothing in the pipeline reviewed a UI change for usability: `designer` designed, `bughunter` checked accessibility, nobody asked whether the error message says what to do or whether there is an undo.
+
+- `designer`: the critique pass now walks seven usability questions (one obvious primary action, orientation without body copy, labels in the user's words, feedback and error text, undo without confirmation dialogs, nothing hover- or icon-only, nothing that makes you stop and think) and fixes a "no" in the spec before handoff.
+- `bughunter`: a **Usability** lens next to Accessibility — Nielsen's ten heuristics, one line each, rated on the same 0–4 severity scale, reported with file:line like every other finding. It runs on every frontend change, including the ones that never went through `/superflow:design`.
+- Adapted from the MIT-licensed wondelai/skills `ux-heuristics` skill; credited in ATTRIBUTION alongside the pieces `ui-reduction` already borrowed.
+
 ## 0.12.0
 
 **Vendor the Build loop. Add tests.**

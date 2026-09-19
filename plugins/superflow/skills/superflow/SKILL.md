@@ -55,7 +55,7 @@ Skip any stage that doesn't apply.
 | Isolate | `superflow:using-git-worktrees` | — |
 | Design (UI) | `superflow:design` (mock-locked) · `superflow:ui-reduction` (declutter) | `superflow:designer` |
 | Build + unit tests | `superflow:subagent-driven-development` (fresh implementer per task, spec + quality review per task, rulings ledger) · `superflow:test-driven-development` inside each task | `superflow:codezilla` as the implementer `subagent_type`; SDD's reviewer prompts as written |
-| Verify | `superflow:verification-before-completion` | `superflow:bughunter` (functional, convention, security, a11y) |
+| Verify | `superflow:verification-before-completion` | `superflow:bughunter` (functional, convention, security, a11y, usability) |
 | Review | `superflow:requesting-code-review` / `superflow:receiving-code-review` · `/superflow:review-sweep` for big diffs | `superflow:architect` |
 | Debug | `superflow:systematic-debugging` | `superflow:sherlock` → `superflow:bughunter` |
 | Finish | `superflow:finishing-a-development-branch` | — (`/superflow:codebase-rulebook --refresh` if a convention changed) |
@@ -91,7 +91,7 @@ Before **any** code change, consult the relevant section(s) of `CODEBASE_RULEBOO
 | `architect` | Technical design and review. Scalability, boundaries, tradeoffs. Not the default builder. |
 | `designer` | UX/UI spec before code (read-only). |
 | `codezilla` | Implementer; tight code, consults the rulebook, writes the unit tests. Runs as SDD's implementer in the Build stage. |
-| `bughunter` | Adversarial QA: functional, convention, security, and accessibility (WCAG 2.0 AA) findings. |
+| `bughunter` | Adversarial QA: functional, convention, security, accessibility (WCAG 2.0 AA) and usability (Nielsen) findings. |
 
 ## Commands
 
