@@ -22,7 +22,7 @@ claude plugin install superflow@superflow      # add --scope to control reach
 | `project` | this repo, shared with your team via committed settings |
 | `local` | this repo, your machine only (gitignored `.claude/settings.local.json`) |
 
-Restart the session so the SessionStart hook fires; `/plugin` should show superflow with 5 personas, 17 skills, 2 workflows, all addressed as `superflow:<name>`. The hook's first token is the running version (`[superflow 0.12.0]`) — if it doesn't match the repo, a stale scoped copy is winning (see below).
+Restart the session so the SessionStart hook fires; `/plugin` should show superflow with 5 personas, 17 skills, 2 workflows, all addressed as `superflow:<name>`. The hook's first token is the running version (`[superflow 0.12.1]`) — if it doesn't match the repo, a stale scoped copy is winning (see below).
 
 Then, once per repo:
 
@@ -62,7 +62,7 @@ flowchart LR
 | Isolate | using-git-worktrees | — |
 | Design (UI) | design · ui-reduction | `designer` → mock you click and lock |
 | Build + unit tests | subagent-driven-development (fresh implementer per task, review per task) · test-driven-development inside each task | `codezilla` as the implementer |
-| Verify | verification-before-completion | `bughunter` (functional · convention · security · a11y) |
+| Verify | verification-before-completion | `bughunter` (functional · convention · security · a11y · usability) |
 | Review | requesting/receiving-code-review | `architect` |
 | Debug | systematic-debugging | `sherlock` → `bughunter` |
 

@@ -35,10 +35,14 @@ The coding personas and the `codebase-rulebook` mechanism are a **generalized fo
 internal **agent-circus** plugin, stripped of all stack-specific skills so they work in any
 repository. Credited here for provenance.
 
-## Adapted: UI reduction method (`plugins/superflow/skills/ui-reduction/`)
+## Adapted: usability method (`ui-reduction/`, `agents/designer.md`, `agents/bughunter.md`)
 
-The Step 0 quick-diagnostic and the Step 6 severity-rating patterns are adapted from the
-MIT-licensed **wondelai/skills** `ux-heuristics` skill. The rest of the method is original.
+Three pieces are adapted from the MIT-licensed **wondelai/skills** `ux-heuristics` skill
+(https://github.com/wondelai/skills): the Step 0 quick-diagnostic and the Step 6
+severity-rating patterns in `ui-reduction`, the usability questions in `designer`'s critique
+pass, and the Quick Diagnostic plus severity scale in `bughunter`'s Usability lens. The
+heuristics themselves are Nielsen's ten (Nielsen Norman Group) and Krug's laws, restated.
+The rest of each file is original.
 
 ## Original work (`plugins/superflow/skills/`, `plugins/superflow/workflows/`)
 

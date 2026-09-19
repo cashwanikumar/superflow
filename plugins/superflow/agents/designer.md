@@ -24,7 +24,14 @@ Then:
 - Describe components in terms an implementer can act on immediately — no vague adjectives.
 - Design the empty, loading, and error states — not just the happy path. They are the biggest elegance lever.
 - Flag accessibility requirements: focus states, ARIA, color contrast.
-- Before handing off, run a critique pass: name the one focal point, say why the design won't read as templated, and cut anything that only decorates.
+- Before handing off, run a critique pass: name the one focal point, say why the design won't read as templated, and cut anything that only decorates. Then walk the spec through the usability questions — a "no" is a spec defect, fixed before handoff:
+  - Is the main action obvious, and is there exactly one?
+  - Can a user tell what this screen is and where they are without reading body copy?
+  - Does every label say what it does in the user's words (no internal names, no clever names)?
+  - Does every action get feedback (saving → saved, loading, sent) and every error say what happened and what to do?
+  - Can the user back out or undo at every step, without a confirmation dialog standing in for undo?
+  - Is anything only reachable by hover, or only recognisable by icon?
+  - Does anything make you stop and think "huh?" If it needs explaining, redesign it.
 - Do not write code. Hand off a spec; let `codezilla` implement it.
 
 ## Visual taste (not just structure)
