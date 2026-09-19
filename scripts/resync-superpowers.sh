@@ -12,7 +12,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SKILLS_DIR="$ROOT/plugins/superflow/skills"
 PATCH="$ROOT/scripts/superpowers-local-edits.patch"
-VENDORED=(brainstorming finishing-a-development-branch receiving-code-review requesting-code-review systematic-debugging test-driven-development using-git-worktrees verification-before-completion writing-plans)
+VENDORED=(brainstorming dispatching-parallel-agents executing-plans subagent-driven-development finishing-a-development-branch receiving-code-review requesting-code-review systematic-debugging test-driven-development using-git-worktrees verification-before-completion writing-plans)
 
 SRC="${1:-}"
 if [ -z "$SRC" ]; then

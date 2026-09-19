@@ -58,7 +58,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** implement this plan task-by-task — in the superflow weave, `superflow:codezilla` works it top to bottom under `superflow:test-driven-development`. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superflow:subagent-driven-development (recommended) or superflow:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -152,12 +152,20 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, hand off to execution:
+After saving the plan, offer execution choice:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Ready to execute?"**
+**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
 
-- In the weave: hand to `superflow:codezilla` (Build stage), then `superflow:bughunter` / `superflow:architect` (Verify, Review)
-- Solo: work the tasks inline, in order, verifying each before the next
+**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 
-If the tasks are tightly coupled rather than independent, say so and work them
-inline in this session, following the plan's steps and verifications in order.
+**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
+
+**Which approach?"**
+
+**If Subagent-Driven chosen:**
+- **REQUIRED SUB-SKILL:** Use superflow:subagent-driven-development
+- Fresh subagent per task + two-stage review
+
+**If Inline Execution chosen:**
+- **REQUIRED SUB-SKILL:** Use superflow:executing-plans
+- Batch execution with checkpoints for review
